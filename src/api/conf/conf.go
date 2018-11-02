@@ -1,6 +1,4 @@
-package config
-
-var cfgFile string
+package conf
 
 func Init() {
 

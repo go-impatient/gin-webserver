@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/moocss/go-webserver/src/api/config"
+	"github.com/moocss/go-webserver/src/api/conf"
 	"github.com/moocss/go-webserver/src/api/bootstrap"
 )
 
@@ -10,15 +10,7 @@ var (
 	rootCmd = &cobra.Command{
 		Use:               "web-api",
 		Short:             "api server",
-		Long:              `
-							.__                                        
-_____  ______ |__| ______ ______________  __ ___________ 
-\__  \ \____ \|  |/  ___// __ \_  __ \  \/ // __ \_  __ \
- / __ \|  |_> >  |\___ \\  ___/|  | \/\   /\  ___/|  | \/
-(____  /   __/|__/____  >\___  >__|    \_/  \___  >__|   
-     \/|__|           \/     \/                 \/      
-		
-		Start api server ...`,
+		Long:              `Start api server`,
 		SilenceUsage:      true,
 		DisableAutoGenTag: true,
 		PersistentPreRunE: func(*cobra.Command, []string) error { return nil },
@@ -26,15 +18,15 @@ _____  ______ |__| ______ ______________  __ ___________
 	startCmd = &cobra.Command{
 		Use:     "start",
 		Short:   "Start api server",
-		Example: "web-api start -c config/conf.toml",
+		Example: "web-api start -c src/conf/conf.yaml",
 		RunE:    start,
 	}
 )
 
 func init()  {
-	cobra.OnInitialize(config.Init)
+	cobra.OnInitialize(conf.Init)
 
-	startCmd.PersistentFlags().StringVarP(&bootstrap.Args.ConfigFile, "config", "c", "config/conf.toml",
+	startCmd.PersistentFlags().StringVarP(&bootstrap.Args.ConfigFile, "conf", "c", "src/conf/conf.yaml",
 		"Start server with provided configuration file")
 	startCmd.PersistentFlags().StringVarP(&bootstrap.Args.Host, "host", "H", "0.0.0.0",
 		"Start server with provided host")
@@ -48,4 +40,9 @@ func init()  {
 func start(_ *cobra.Command, _ []string) error {
 
 	return nil
+}
+
+// Execute executes the root command.
+func Execute() {
+	rootCmd.Execute()
 }
