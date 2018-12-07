@@ -1,23 +1,22 @@
-package cmd
+package version
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/moocss/go-webserver/src/api/pkg/version"
 )
 
 // Command returns a command used to print version information.
-func versionCmd() *cobra.Command {
+func Command() *cobra.Command {
 	var short bool
 	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Prints out build version information",
 		Run: func(cmd *cobra.Command, args []string) {
 			if short {
-				fmt.Println(version.Info)
+				fmt.Println(Info)
 			} else {
-				fmt.Println(version.Info.LongForm())
+				fmt.Println(Info.LongForm())
 			}
 		},
 	}

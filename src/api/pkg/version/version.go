@@ -66,19 +66,21 @@ func (b BuildInfo) String() string {
 // User: user@host
 // GolangVersion: go1.10.2
 // BuildStatus: <build status>
+// BuildTime: <build time>
 // Compiler: <compiler>
 // Platform: <platform>
 // ```
 func (b BuildInfo) LongForm() string {
-	return fmt.Sprintf(`Version: %v
-GitRevision: %v
-User: %v@%v
-GolangVersion: %v
-BuildStatus: %v
-BuildTime: %v
-Compiler: %v
-Platform: %v
-`,
+	return fmt.Sprintf(`
+	  Version: %v
+		GitRevision: %v
+		User: %v@%v
+		GolangVersion: %v
+		BuildStatus: %v
+		BuildTime: %v
+		Compiler: %v
+		Platform: %v
+		`,
 		b.Version,
 		b.GitRevision,
 		b.User,
