@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/moocss/go-webserver/src/api/pkg/version"
+	"github.com/moocss/go-webserver/src/pkgsion"
 )
 
 // Version is a middleware function that appends the Bear version information

@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/moocss/go-webserver/src/api/handler"
-	"github.com/moocss/go-webserver/src/api/pkg/version"
-	"github.com/moocss/go-webserver/src/api/router/middleware/header"
+	"github.com/moocss/go-webserver/src/handler"
+	"github.com/moocss/go-webserver/src/pkgsion"
+	"github.com/moocss/go-webserver/src/routerdleware/header"
 )
 
 func rootHandler(c *gin.Context) {

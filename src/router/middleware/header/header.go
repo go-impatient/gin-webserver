@@ -3,7 +3,7 @@ package header
 import (
 	"net/http"
 	"time"
-	"github.com/moocss/go-webserver/src/api/pkg/version"
+	"github.com/moocss/go-webserver/src/pkgsion"
 	"github.com/gin-gonic/gin"
 )
 

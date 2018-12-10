@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/moocss/go-webserver/src/api/pkg/version"
+	"github.com/moocss/go-webserver/src/pkg/version"
 	"github.com/urfave/cli"
 )
 
@@ -13,7 +13,7 @@ func main() {
 	app.Name = "bear-server"
 	app.Version = version.Info.String() // version.Version.String()
 	app.Usage = "bear server"
-	app.Action = server
+	app.Action = start
 	app.Flags = flags
 	app.Before = func(c *cli.Context) error {
 		fmt.Fprintf(c.App.Writer, "brace for impact\n")
