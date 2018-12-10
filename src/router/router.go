@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/moocss/go-webserver/src/api/router/middleware/header"
-	"github.com/moocss/go-webserver/src/api/pkg/version"
 	"github.com/moocss/go-webserver/src/api/handler"
+	"github.com/moocss/go-webserver/src/api/pkg/version"
+	"github.com/moocss/go-webserver/src/api/router/middleware/header"
 )
 
 func rootHandler(c *gin.Context) {
@@ -38,14 +38,8 @@ func Load(g *gin.Engine, middleware ...gin.HandlerFunc) *gin.Engine {
 
 	// 404 Handler.
 	g.NoRoute(func(c *gin.Context) {
-		c.String(http.StatusNotFound, "不存在的接口地址.")
+		c.String(http.StatusNotFound, "网址被外星人劫持了~")
 	})
-
-	// User API
-	u := g.Group("/v1/user")
-	{
-		// u.GET("/:id", user.GetUserById)
-	}
 
 	// The health check handlers
 	svcd := g.Group("/sd")
@@ -54,6 +48,12 @@ func Load(g *gin.Engine, middleware ...gin.HandlerFunc) *gin.Engine {
 		svcd.GET("/disk", handler.DiskCheck)
 		svcd.GET("/cpu", handler.CPUCheck)
 		svcd.GET("/ram", handler.RAMCheck)
+	}
+
+	// User API
+	u := g.Group("api/v1/user")
+	{
+		// u.GET("/:id", user.GetUserById)
 	}
 
 	return g
