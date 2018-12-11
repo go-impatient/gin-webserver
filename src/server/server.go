@@ -1,20 +1,28 @@
 package server
 
 import (
+	"crypto/tls"
+	"github.com/moocss/go-webserver/src/storer"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/acme/autocert"
 	"github.com/moocss/go-webserver/src/router"
+	"github.com/moocss/go-webserver/src/bootstrap"
+	"github.com/moocss/go-webserver/src/log"
+	"github.com/moocss/go-webserver/src/router/middleware"
 )
 
 // Init returns a app instance
 func Init() *gin.Engine {
 	// Set gin mode.
-	gin.SetMode(Conf.Core.Mode)
+	gin.SetMode(bootstrap.Conf.Core.Mode)
 
 	// Create the Gin engine.
 	g := gin.New()
@@ -32,8 +40,8 @@ func Init() *gin.Engine {
 func autoTLSServer() *http.Server {
 	m := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
-		HostPolicy: autocert.HostWhitelist(Conf.Core.AutoTLS.Host),
-		Cache:      autocert.DirCache(Conf.Core.AutoTLS.Folder),
+		HostPolicy: autocert.HostWhitelist(bootstrap.Conf.Core.AutoTLS.Host),
+		Cache:      autocert.DirCache(bootstrap.Conf.Core.AutoTLS.Folder),
 	}
 	return &http.Server{
 		Addr:      	":https",
@@ -44,39 +52,39 @@ func autoTLSServer() *http.Server {
 
 func defaultTLSServer() *http.Server {
 	return &http.Server{
-		Addr: 			"0.0.0.0:" + Conf.Core.TLS.Port,
+		Addr: 			"0.0.0.0:" + bootstrap.Conf.Core.TLS.Port,
 		Handler:	  Init(),
 	}
 }
 
 func defaultServer() *http.Server {
 	return &http.Server{
-		Addr: 			"0.0.0.0:" + Conf.Core.Port,
+		Addr: 			"0.0.0.0:" + bootstrap.Conf.Core.Port,
 		Handler:	  Init(),
 	}
 }
 
 // RunHTTPServer provide run http or https protocol.
 func RunHTTPServer() (err error) {
-	if !Conf.Core.Enabled {
+	if !bootstrap.Conf.Core.Enabled {
 		log.Debug("httpd server is disabled.")
 		return nil
 	}
 
-	if Conf.Core.AutoTLS.Enabled {
+	if bootstrap.Conf.Core.AutoTLS.Enabled {
 		s := autoTLSServer()
 		handleSignal(s)
 		log.Infof("1. Start to listening the incoming requests on https address")
 		err = s.ListenAndServeTLS("", "")
-	} else if Conf.Core.TLS.CertPath != "" && Conf.Core.TLS.KeyPath != "" {
+	} else if bootstrap.Conf.Core.TLS.CertPath != "" && bootstrap.Conf.Core.TLS.KeyPath != "" {
 		s := defaultTLSServer()
 		handleSignal(s)
-		log.Infof("2. Start to listening the incoming requests on https address: %s", Conf.Core.TLS.Port)
-		err = s.ListenAndServeTLS(Conf.Core.TLS.CertPath, Conf.Core.TLS.KeyPath)
+		log.Infof("2. Start to listening the incoming requests on https address: %s", bootstrap.Conf.Core.TLS.Port)
+		err = s.ListenAndServeTLS(bootstrap.Conf.Core.TLS.CertPath, bootstrap.Conf.Core.TLS.KeyPath)
 	} else {
 		s := defaultServer()
 		handleSignal(s)
-		log.Infof("3. Start to listening the incoming requests on http address: %s", Conf.Core.Port)
+		log.Infof("3. Start to listening the incoming requests on http address: %s", bootstrap.Conf.Core.Port)
 		err = s.ListenAndServe()
 	}
 
@@ -92,10 +100,10 @@ func handleSignal(server *http.Server) {
 		s := <-c
 		log.Infof("got signal [%s], exiting apiserver now", s)
 		if err := server.Close(); nil != err {
-			log.Errorf(err, "server close failed ")
+			log.Errorf("server close failed ", err)
 		}
 
-		service.DB.Close()
+		storer.DB.Close()
 
 		log.Infof("apiserver exited")
 		os.Exit(0)

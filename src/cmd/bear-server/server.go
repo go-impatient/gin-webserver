@@ -11,6 +11,14 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+var flags = []cli.Flag{
+	cli.BoolFlag{
+		EnvVar: "BEAR_DEBUG",
+		Name:   "debug",
+		Usage:  "enable server debug mode",
+	},
+}
+
 func start(c *cli.Context) error {
 	var (
 		err error
@@ -20,7 +28,7 @@ func start(c *cli.Context) error {
 	storer.DB.Init()
 
 	// set default parameters.
-	bootstarap.Conf, err = config.Init("")
+	bootstrap.Conf, err = config.Init("")
 	if err != nil {
 		fmt.Printf("Load yaml config file error: '%v'", err)
 		return nil
@@ -28,10 +36,10 @@ func start(c *cli.Context) error {
 
 	// overwrite server port and address
 	if c.String("port") != "" {
-		bootstarap.Conf.Core.Port = c.String("port")
+		bootstrap.Conf.Core.Port = c.String("port")
 	}
 	if c.String("host") != "" {
-		bootstarap.Conf.Core.Host = c.String("host")
+		bootstrap.Conf.Core.Host = c.String("host")
 	}
 
 	g.Go(func() error {

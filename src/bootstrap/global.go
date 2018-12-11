@@ -1,4 +1,4 @@
-package bootstarap
+package bootstrap
 
 import "github.com/moocss/go-webserver/src/config"
 
