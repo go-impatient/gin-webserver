@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"errors"
 	"syscall"
 	"time"
 
@@ -112,10 +113,10 @@ func handleSignal(server *http.Server) {
 
 // PingServer
 func PingServer() (err error) {
-	maxPingConf := Conf.Core.MaxPingCount
+	maxPingConf := bootstrap.Conf.Core.MaxPingCount
 	for i := 0; i < maxPingConf; i++ {
 		// Ping the server by sending a GET request to `/health`.
-		resp, err := http.Get("http://localhost:" + Conf.Core.Port + "/sd/health")
+		resp, err := http.Get("http://localhost:" + bootstrap.Conf.Core.Port + "/sd/health")
 		if err == nil && resp.StatusCode == 200 {
 			return nil
 		}
@@ -130,7 +131,7 @@ func PingServer() (err error) {
 
 // Redirect 重定向
 func Redirect(w http.ResponseWriter, req *http.Request) {
-	var serverHost string = ''
+	var serverHost string = ""
 	serverHost = strings.TrimPrefix(serverHost, "http://")
 	serverHost = strings.TrimPrefix(serverHost, "https://")
 	req.URL.Scheme = "https"
