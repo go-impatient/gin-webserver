@@ -1,0 +1,28 @@
+core:
+  enabled: true                   # enabale httpd server
+  mode: "debug"                   # 开发模式, debug, release, test
+  name: "apiserver"               # API Server的名字
+  host: ""                        # ip address to bind (default: any)
+  port: "9090"                    # HTTP 绑定端口.
+  max_ping_count: 2               # pingServer函数try的次数
+  jwt_secret: "Rtg8BPKNEf2mB4mgvKONGPZZQSaJWNLijxR42qRgq0iBb5"
+  tls:
+    port: "9098"
+    cert_path: ""                 # src/config/server.crt
+    key_path: ""                  # src/config/server.key
+  auto_tls:
+    enabled: false                # Automatically install TLS certificates from Let's Encrypt.
+    folder: ".cache"              # folder for storing TLS certificates
+    host: ""                      # which domains the Let's Encrypt will attempt
+
+db:
+  name: "db_apiserver"
+  addr: "127.0.0.1:3306"
+  username: "root"
+  password: "123456"
+
+docker_db:
+  name: "db_apiserver"
+  addr: "127.0.0.1:3306"
+  username: "root"
+  password: "123456"

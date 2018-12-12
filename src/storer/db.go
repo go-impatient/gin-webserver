@@ -30,7 +30,7 @@ func realDSN(dbname, username, password, addr string) string {
 func openDB(connStr string) *gorm.DB {
 	db, err := gorm.Open("mysql", connStr)
 	if err != nil {
-		log.Errorf(err, "Database connection failed.")
+		log.Errorf("Database connection failed.", err)
 	} else {
 		log.Infof("Database connection succeed.")
 	}

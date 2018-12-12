@@ -24,10 +24,11 @@ func start(c *cli.Context) error {
 		err error
 		g   errgroup.Group
 	)
-	// init db
+
+	// 初始化数据
 	storer.DB.Init()
 
-	// set default parameters.
+	// 设置默认参数.
 	bootstrap.Conf, err = config.Init("")
 	if err != nil {
 		fmt.Printf("Load yaml config file error: '%v'", err)
