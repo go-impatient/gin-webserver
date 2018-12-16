@@ -15,7 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/acme/autocert"
 	"github.com/moocss/go-webserver/src/router"
-	"github.com/moocss/go-webserver/src/bootstrap"
+	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/log"
 	"github.com/moocss/go-webserver/src/router/middleware"
 )
@@ -23,7 +23,7 @@ import (
 // Init returns a app instance
 func Init() *gin.Engine {
 	// Set gin mode.
-	gin.SetMode(bootstrap.Conf.Core.Mode)
+	gin.SetMode(config.Bear.C.Core.Mode)
 
 	// Create the Gin engine.
 	g := gin.New()
@@ -41,8 +41,8 @@ func Init() *gin.Engine {
 func autoTLSServer() *http.Server {
 	m := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
-		HostPolicy: autocert.HostWhitelist(bootstrap.Conf.Core.AutoTLS.Host),
-		Cache:      autocert.DirCache(bootstrap.Conf.Core.AutoTLS.Folder),
+		HostPolicy: autocert.HostWhitelist(config.Bear.C.Core.AutoTLS.Host),
+		Cache:      autocert.DirCache(config.Bear.C.Core.AutoTLS.Folder),
 	}
 	return &http.Server{
 		Addr:      	":https",
@@ -53,39 +53,39 @@ func autoTLSServer() *http.Server {
 
 func defaultTLSServer() *http.Server {
 	return &http.Server{
-		Addr: 			"0.0.0.0:" + bootstrap.Conf.Core.TLS.Port,
+		Addr: 			"0.0.0.0:" + config.Bear.C.Core.TLS.Port,
 		Handler:	  Init(),
 	}
 }
 
 func defaultServer() *http.Server {
 	return &http.Server{
-		Addr: 			"0.0.0.0:" + bootstrap.Conf.Core.Port,
+		Addr: 			"0.0.0.0:" + config.Bear.C.Core.Port,
 		Handler:	  Init(),
 	}
 }
 
 // RunHTTPServer provide run http or https protocol.
 func RunHTTPServer() (err error) {
-	if !bootstrap.Conf.Core.Enabled {
+	if !config.Bear.C.Core.Enabled {
 		log.Debug("httpd server is disabled.")
 		return nil
 	}
 
-	if bootstrap.Conf.Core.AutoTLS.Enabled {
+	if config.Bear.C.Core.AutoTLS.Enabled {
 		s := autoTLSServer()
 		handleSignal(s)
 		log.Infof("1. Start to listening the incoming requests on https address")
 		err = s.ListenAndServeTLS("", "")
-	} else if bootstrap.Conf.Core.TLS.CertPath != "" && bootstrap.Conf.Core.TLS.KeyPath != "" {
+	} else if config.Bear.C.Core.TLS.CertPath != "" && config.Bear.C.Core.TLS.KeyPath != "" {
 		s := defaultTLSServer()
 		handleSignal(s)
-		log.Infof("2. Start to listening the incoming requests on https address: %s", bootstrap.Conf.Core.TLS.Port)
-		err = s.ListenAndServeTLS(bootstrap.Conf.Core.TLS.CertPath, bootstrap.Conf.Core.TLS.KeyPath)
+		log.Infof("2. Start to listening the incoming requests on https address: %s", config.Bear.C.Core.TLS.Port)
+		err = s.ListenAndServeTLS(config.Bear.C.Core.TLS.CertPath, config.Bear.C.Core.TLS.KeyPath)
 	} else {
 		s := defaultServer()
 		handleSignal(s)
-		log.Infof("3. Start to listening the incoming requests on http address: %s", bootstrap.Conf.Core.Port)
+		log.Infof("3. Start to listening the incoming requests on http address: %s", config.Bear.C.Core.Port)
 		err = s.ListenAndServe()
 	}
 
@@ -113,10 +113,10 @@ func handleSignal(server *http.Server) {
 
 // PingServer
 func PingServer() (err error) {
-	maxPingConf := bootstrap.Conf.Core.MaxPingCount
+	maxPingConf := config.Bear.C.Core.MaxPingCount
 	for i := 0; i < maxPingConf; i++ {
 		// Ping the server by sending a GET request to `/health`.
-		resp, err := http.Get("http://localhost:" + bootstrap.Conf.Core.Port + "/sd/health")
+		resp, err := http.Get("http://localhost:" + config.Bear.C.Core.Port + "/sd/health")
 		if err == nil && resp.StatusCode == 200 {
 			return nil
 		}

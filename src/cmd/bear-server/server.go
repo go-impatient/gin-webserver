@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"github.com/moocss/go-webserver/src/bootstrap"
 	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/log"
 	"github.com/moocss/go-webserver/src/server"
@@ -17,30 +15,31 @@ var flags = []cli.Flag{
 		Name:   "debug",
 		Usage:  "enable server debug mode",
 	},
+	cli.BoolFlag{
+		EnvVar: "BEAR_CONFING",
+		Name:   "c",
+		Usage:  "set config file",
+	},
 }
 
 func start(c *cli.Context) error {
 	var (
 		err error
-		g   errgroup.Group
+		g errgroup.Group
 	)
 
 	// 初始化数据
 	storer.DB.Init()
 
 	// 设置默认参数.
-	bootstrap.Conf, err = config.Init("")
-	if err != nil {
-		fmt.Printf("Load yaml config file error: '%v'", err)
-		return nil
-	}
+	config.InitConfig(c.String("c"))
 
 	// overwrite server port and address
 	if c.String("port") != "" {
-		bootstrap.Conf.Core.Port = c.String("port")
+		config.Bear.C.Core.Port = c.String("port")
 	}
 	if c.String("host") != "" {
-		bootstrap.Conf.Core.Host = c.String("host")
+		config.Bear.C.Core.Host = c.String("host")
 	}
 
 	g.Go(func() error {

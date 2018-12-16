@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/moocss/go-webserver/src/log"
+	"github.com/moocss/go-webserver/src/storer"
 )
 
 var defaultConf = []byte(`
@@ -42,10 +43,6 @@ docker_db:
 `)
 
 type Config struct {
-	Name string
-}
-
-type ConfYaml struct {
 	Core     SectionCore     `yaml:"core"`
 	Log      SectionLog      `yaml:"log"`
 	Db       SectionDb       `yaml:"db"`
@@ -107,26 +104,9 @@ type SectionDockerDb struct {
 	Password string `yaml:"password"`
 }
 
-func Init(configName string) (ConfYaml, error) {
-	c := Config{
-		Name: configName,
-	}
-
-	// 初始化配置文件
-	conf, err := c.initConfig()
-	if err != nil {
-		return conf, nil
-	}
-
-	// 监控配置文件变化并热加载程序
-	c.watchConfig()
-
-	return conf, nil
-}
-
-// 初始化配置文件
-func (c *Config) initConfig() (ConfYaml, error) {
-	var conf ConfYaml
+// 加载配置文件
+func InitConfig(confPath string) {
+	var conf Config
 
 	// 设置配置文件格式为YAML
 	viper.SetConfigType("yaml")
@@ -140,22 +120,43 @@ func (c *Config) initConfig() (ConfYaml, error) {
 	replacer := strings.NewReplacer(".", "_")
 	viper.SetEnvKeyReplacer(replacer)
 
-	if c.Name != "" {
-		// 如果指定了配置文件，则解析指定的配置文件
-		viper.SetConfigFile(c.Name)
+	if confPath != "" {
+		// 如果指定了配置文件路径，则解析指定的配置文件路径
+		viper.SetConfigFile(confPath)
 	} else {
 		// 如果没有指定配置文件，则解析默认的配置文件
-		viper.AddConfigPath("src/config")
+		// Search config in home directory with name ".bear" (without extension).
+		viper.AddConfigPath("/etc/bear/")
+		viper.AddConfigPath("$HOME/.bear")
+		viper.AddConfigPath(".")
 		viper.SetConfigName("config")
 	}
 
-	// viper解析配置文件
-	if err := viper.ReadInConfig(); err != nil {
+	// If a config file is found, read it in.
+	err := viper.ReadInConfig();
+	if err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	} else {
 		// load default config
-		viper.ReadConfig(bytes.NewBuffer(defaultConf))
+		err := viper.ReadConfig(bytes.NewBuffer(defaultConf));
+		if err != nil {
+			log.Fatal("读取默认失败: " + err.Error())
+		}
 	}
+
+	err = viper.Unmarshal(Bear.C)
+
+	if err != nil {
+		log.Fatal("error: " + err.Error())
+	}
+
+	log.Info("加载配置完成!")
+
+	// 监控配置文件变化并热加载程序
+	viper.WatchConfig()
+	viper.OnConfigChange(func(e fsnotify.Event) {
+		log.Infof("Config file changed: %s", e.Name)
+	})
 
 	// Core
 	conf.Core.Enabled = viper.GetBool("core.enabled")
@@ -184,13 +185,18 @@ func (c *Config) initConfig() (ConfYaml, error) {
 	conf.DockerDb.Username = viper.GetString("docker_db.username")
 	conf.DockerDb.Password = viper.GetString("docker_db.password")
 
-	return conf, nil
+
 }
 
-// 监控配置文件变化并热加载程序
-func (c *Config) watchConfig() {
-	viper.WatchConfig()
-	viper.OnConfigChange(func(e fsnotify.Event) {
-		log.Infof("Config file changed: %s", e.Name)
-	})
+// 项目
+type bear struct {
+	C				*Config
+	Cache   *storer.CacheStore
+	// ...
+}
+
+// Bear 包含全局信息，更重要是配置信息
+var Bear = bear{
+	C: &Config{},
+	// ...
 }
