@@ -54,7 +54,7 @@ type SectionCore struct {
 	Enabled      bool           `yaml:"enabled"`
 	Mode         string         `yaml:"mode"`
 	Name         string         `yaml:"name"`
-	Host      	 string         `yaml:"host"`
+	Host         string         `yaml:"host"`
 	Port         string         `yaml:"port"`
 	MaxPingCount int            `yaml:"max_ping_count"`
 	JwtSecret    string         `yaml:"jwt_secret"`
@@ -104,8 +104,21 @@ type SectionDockerDb struct {
 	Password string `yaml:"password"`
 }
 
+func Init(confPath string) error {
+
+	// 初始化配置文件
+	if err := initConfig(confPath); err != nil {
+		return err
+	}
+
+	// 监控配置文件变化并热加载程序
+	watchConfig()
+
+	return nil
+}
+
 // 加载配置文件
-func InitConfig(confPath string) {
+func initConfig(confPath string) error {
 	var conf Config
 
 	// 设置配置文件格式为YAML
@@ -114,8 +127,8 @@ func InitConfig(confPath string) {
 	// 读取匹配的环境变量
 	viper.AutomaticEnv()
 
-	// 读取环境变量的前缀为BEARSERVER
-	viper.SetEnvPrefix("BEARSERVER")
+	// 读取环境变量的前缀为bear
+	viper.SetEnvPrefix("bear")
 
 	replacer := strings.NewReplacer(".", "_")
 	viper.SetEnvKeyReplacer(replacer)
@@ -133,24 +146,23 @@ func InitConfig(confPath string) {
 	}
 
 	// If a config file is found, read it in.
-	err := viper.ReadInConfig();
-	if err == nil {
+	if err := viper.ReadInConfig(); err != nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		return err
 	} else {
 		// load default config
-		err := viper.ReadConfig(bytes.NewBuffer(defaultConf));
+		err := viper.ReadConfig(bytes.NewBuffer(defaultConf))
 		if err != nil {
+			return err
 			log.Fatal("读取默认失败: " + err.Error())
 		}
 	}
 
-	err = viper.Unmarshal(Bear.C)
-
-	if err != nil {
-		log.Fatal("error: " + err.Error())
+	// 将新配置解组到我们的运行时配置结构中。
+	if err := viper.Unmarshal(Bear.C); err != nil {
+		log.Fatal("解密配置失败: " + err.Error())
+		return err
 	}
-
-	log.Info("加载配置完成!")
 
 	// 监控配置文件变化并热加载程序
 	viper.WatchConfig()
@@ -185,13 +197,21 @@ func InitConfig(confPath string) {
 	conf.DockerDb.Username = viper.GetString("docker_db.username")
 	conf.DockerDb.Password = viper.GetString("docker_db.password")
 
+	return nil
+}
 
+// 监控配置文件变化并热加载程序
+func watchConfig() {
+	viper.WatchConfig()
+	viper.OnConfigChange(func(e fsnotify.Event) {
+		log.Infof("Config file changed: %s", e.Name)
+	})
 }
 
 // 项目
 type bear struct {
-	C				*Config
-	Cache   *storer.CacheStore
+	C     *Config
+	Cache *storer.CacheStore
 	// ...
 }
 

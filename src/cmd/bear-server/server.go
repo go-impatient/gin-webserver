@@ -24,15 +24,16 @@ var flags = []cli.Flag{
 
 func start(c *cli.Context) error {
 	var (
-		err error
 		g errgroup.Group
 	)
 
 	// 初始化数据
 	storer.DB.Init()
 
-	// 设置默认参数.
-	config.InitConfig(c.String("c"))
+	// 设置默认配置
+	if err := config.Init(c.String("c")); err != nil {
+		log.Infof("Load yaml config file error: '%v'", err)
+	}
 
 	// overwrite server port and address
 	if c.String("port") != "" {
@@ -51,7 +52,7 @@ func start(c *cli.Context) error {
 		return server.PingServer()
 	})
 
-	if err = g.Wait(); err != nil {
+	if err := g.Wait(); err != nil {
 		log.Error("接口服务出错了：", err)
 	}
 
