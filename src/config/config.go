@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/moocss/go-webserver/src/log"
-	"github.com/moocss/go-webserver/src/storer"
 )
 
 var defaultConf = []byte(`
@@ -159,10 +158,10 @@ func initConfig(confPath string) error {
 	}
 
 	// 将新配置解组到我们的运行时配置结构中。
-	if err := viper.Unmarshal(Bear.C); err != nil {
-		log.Fatal("解密配置失败: " + err.Error())
-		return err
-	}
+	//if err := viper.Unmarshal(Bear.C); err != nil {
+	//	log.Fatal("解密配置失败: " + err.Error())
+	//	return err
+	//}
 
 	// 监控配置文件变化并热加载程序
 	viper.WatchConfig()
@@ -210,8 +209,8 @@ func watchConfig() {
 
 // 项目
 type bear struct {
-	C     *Config
-	Cache *storer.CacheStore
+	C *Config
+	// Cache *storer.CacheStore
 	// ...
 }
 

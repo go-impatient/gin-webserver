@@ -9,25 +9,25 @@ import (
 
 // Test file is missing
 func TestMissingFile(t *testing.T) {
-	filename := "test"
-	_, err := Init(filename)
+	filePath := "test"
+	err := Init(filePath)
 
 	assert.NotNil(t, err)
 }
 
 type ConfigTestSuite struct {
 	suite.Suite
-	ConfDefault 	ConfYaml
-	Conf        	ConfYaml
+	ConfDefault Config
+	Conf        Config
 }
 
 func (suite *ConfigTestSuite) SetupTest() {
 	var err error
-	suite.ConfDefault, err = Init("")
+	err = Init("")
 	if err != nil {
 		panic("failed to load default config.yml")
 	}
-	suite.Conf, err = Init("src/config/config")
+	err = Init("src/config/config")
 	if err != nil {
 		panic("failed to load config.yml from file")
 	}
@@ -37,7 +37,7 @@ func (suite *ConfigTestSuite) TestValidateConfDefault() {
 	// Core
 	assert.Equal(suite.T(), "apiserver", suite.ConfDefault.Core.Name)
 	assert.Equal(suite.T(), true, suite.ConfDefault.Core.Enabled)
-	assert.Equal(suite.T(), "", suite.ConfDefault.Core.Address)
+	assert.Equal(suite.T(), "", suite.ConfDefault.Core.Host)
 	assert.Equal(suite.T(), "9090", suite.ConfDefault.Core.Port)
 	assert.Equal(suite.T(), "debug", suite.ConfDefault.Core.Mode)
 	assert.Equal(suite.T(), 2, suite.ConfDefault.Core.MaxPingCount)
@@ -66,7 +66,7 @@ func (suite *ConfigTestSuite) TestValidateConfDefault() {
 
 func (suite *ConfigTestSuite) TestValidateConf() {
 	// Core
-	assert.Equal(suite.T(), "", suite.Conf.Core.Address)
+	assert.Equal(suite.T(), "", suite.Conf.Core.Host)
 	assert.Equal(suite.T(), "9090", suite.Conf.Core.Port)
 	assert.Equal(suite.T(), "debug", suite.Conf.Core.Mode)
 }
