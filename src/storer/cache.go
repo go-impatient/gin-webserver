@@ -22,11 +22,10 @@ func InitCacheStore() *CacheStore {
 }
 
 //Set
-func (c *CacheStore) Set(cKey string	) error {
+func (c *CacheStore) Set(cKey string) error {
 
 	return nil
 }
-
 
 //Get
 func (c *CacheStore) Get(cKey string) error {

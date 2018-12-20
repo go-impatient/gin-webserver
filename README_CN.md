@@ -43,13 +43,44 @@
 ```
 
 ### Go 依赖
-
-我们目前使用 [dep](https://github.com/golang/dep) 管理依赖。
-
+#### dep
 ```bash
 # 安装 dep
 go get -u github.com/golang/dep
 dep init
 dep ensure -add github.com/foo/bar github.com/baz/quux
 dep ensure -v # 安装 Go 依赖
+```
+
+#### govendor
+```bash
+# Setup your project.
+cd "my project in GOPATH"
+govendor init
+
+# Add existing GOPATH files to vendor.
+govendor add +external
+
+# View your work.
+govendor list
+
+# Look at what is using a package
+govendor list -v fmt
+
+# Specify a specific version or revision to fetch
+govendor fetch golang.org/x/net/context@a4bbce9fcae005b22ae5443f6af064d80a6f5a55
+govendor fetch golang.org/x/net/context@v1   # Get latest v1.*.* tag or branch.
+govendor fetch golang.org/x/net/context@=v1  # Get the tag or branch named "v1".
+
+# Update a package to latest, given any prior version constraint
+govendor fetch golang.org/x/net/context
+
+# Format your repository only
+govendor fmt +local
+
+# Build everything in your repository only
+govendor install +local
+
+# Test your repository only
+govendor test +local
 ```
