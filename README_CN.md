@@ -42,6 +42,12 @@
 └── run                             # 本地快速启动脚本
 ```
 
+### 编译
+```bash
+go build -o bearserver
+
+```
+
 ### Go 依赖
 #### dep
 ```bash

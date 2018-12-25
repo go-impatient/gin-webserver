@@ -15,9 +15,9 @@ var flags = []cli.Flag{
 		Name:   "debug",
 		Usage:  "enable server debug mode",
 	},
-	cli.BoolFlag{
+	cli.StringFlag{
 		EnvVar: "BEAR_CONFING",
-		Name:   "c",
+		Name:   "config, c",
 		Usage:  "set config file",
 	},
 }
