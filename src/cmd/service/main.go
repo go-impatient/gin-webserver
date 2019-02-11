@@ -1,1 +1,5 @@
-package service
+package main
+
+func main() {
+
+}

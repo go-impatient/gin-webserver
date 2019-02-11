@@ -3,7 +3,7 @@ package header
 import (
 	"net/http"
 	"time"
-	"github.com/moocss/go-webserver/src/pkgsion"
+	"github.com/moocss/go-webserver/src/pkg/version"
 	"github.com/gin-gonic/gin"
 )
 
@@ -51,7 +51,7 @@ func Secure(c *gin.Context) {
 // version information to the HTTP response. This is intended
 // for debugging and troubleshooting.
 func Version(c *gin.Context) {
-	c.Header("X-BEAR-VERSION", version.Version.String())
+	c.Header("X-BEAR-VERSION", version.Info.String())
 	c.Next()
 }
 

@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/moocss/go-webserver/src/handler"
-	"github.com/moocss/go-webserver/src/pkgsion"
-	"github.com/moocss/go-webserver/src/routerdleware/header"
+	"github.com/moocss/go-webserver/src/pkg/version"
+	"github.com/moocss/go-webserver/src/router/middleware/header"
+	"github.com/moocss/go-webserver/src/router/middleware/sd"
 )
 
 func rootHandler(c *gin.Context) {
@@ -18,7 +18,7 @@ func rootHandler(c *gin.Context) {
 func versionHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"source":  "https://github.com/go-impatient/go-webserver",
-		"version": version.Version.String(),
+		"version": version.Info.String(),
 	})
 }
 
@@ -44,16 +44,16 @@ func Load(g *gin.Engine, middleware ...gin.HandlerFunc) *gin.Engine {
 	// The health check handlers
 	svcd := g.Group("/sd")
 	{
-		svcd.GET("/health", handler.HealthCheck)
-		svcd.GET("/disk", handler.DiskCheck)
-		svcd.GET("/cpu", handler.CPUCheck)
-		svcd.GET("/ram", handler.RAMCheck)
+		svcd.GET("/health", sd.HealthCheck)
+		svcd.GET("/disk", sd.DiskCheck)
+		svcd.GET("/cpu", sd.CPUCheck)
+		svcd.GET("/ram", sd.RAMCheck)
 	}
 
 	// User API
 	u := g.Group("api/v1/user")
 	{
-		// u.GET("/:id", user.GetUserById)
+		u.GET("/:id", func(context *gin.Context) {})
 	}
 
 	return g

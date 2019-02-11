@@ -2,22 +2,22 @@ package server
 
 import (
 	"crypto/tls"
-	"github.com/moocss/go-webserver/src/storer"
+	"errors"
 	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"strings"
-	"errors"
 	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/acme/autocert"
-	"github.com/moocss/go-webserver/src/router"
 	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/log"
+	"github.com/moocss/go-webserver/src/router"
 	"github.com/moocss/go-webserver/src/router/middleware"
+	"github.com/moocss/go-webserver/src/storer"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 // Init returns a app instance

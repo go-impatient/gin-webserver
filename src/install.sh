@@ -1,7 +1,7 @@
 #!/bin/bash
 
-syncd_repo="github.com/dreamans/syncd"
-build_repo="github.com/dreamans/syncd/syncd"
+web_repo="https://github.com/go-impatient/go-webserver"
+build_repo="https://github.com/go-impatient/go-webserver/cmd"
 
 install_path=$( cd `dirname $0`; pwd )/web-deploy
 
@@ -15,7 +15,7 @@ fi
 
 build_web() {
     go get ${build_repo}
-    cd $GOPATH/src/${build_repo}
+    cd $GOPATH/src/${build_repo}/web
     go run build.go
 }
 
@@ -23,9 +23,9 @@ install_web() {
     mkdir ${install_path}
     cd ${install_path}
     mkdir bin log etc
-    cp $GOPATH/src/${build_repo}/syncd ./bin/
-    cp $GOPATH/src/${syncd_repo}/syncd.example.ini ./etc/syncd.ini
-    cp -r $GOPATH/src/${syncd_repo}/public ./public
+    cp $GOPATH/src/${build_repo}/webserver ./bin/
+    cp $GOPATH/src/${web_repo}/conf.yaml ./etc/conf.yaml
+    cp -r $GOPATH/src/${web_repo}/client ./client
 }
 
 
@@ -33,7 +33,7 @@ build_web
 
 install_web
 
-echo "Installing syncd binary: ${install_path}/bin"
+echo "Installing web binary: ${install_path}/bin"
 echo "Installing web public: ${install_path}/client"
-echo "Installing syncd.ini: ${install_path}/etc"
+echo "Installing conf.yaml: ${install_path}/etc"
 echo "Install complete"

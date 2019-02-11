@@ -42,10 +42,9 @@
 └── run                             # 本地快速启动脚本
 ```
 
-### 编译
+### 源码交叉编译并安装
 ```bash
-go build -o bearserver
-
+curl https://raw.githubusercontent.com/dreamans/syncd/master/install.sh |bash
 ```
 
 ### Go 依赖

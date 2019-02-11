@@ -6,9 +6,8 @@ import (
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/spf13/viper"
-
 	"github.com/moocss/go-webserver/src/log"
+	"github.com/spf13/viper"
 )
 
 var defaultConf = []byte(`
@@ -41,67 +40,68 @@ docker_db:
   password: "123456"
 `)
 
-type Config struct {
-	Core     SectionCore     `yaml:"core"`
-	Log      SectionLog      `yaml:"log"`
-	Db       SectionDb       `yaml:"db"`
-	DockerDb SectionDockerDb `yaml:"db"`
-}
+type (
+	Config struct {
+		Core     SectionCore     `yaml:"core"`
+		Log      SectionLog      `yaml:"log"`
+		Db       SectionDb       `yaml:"db"`
+		DockerDb SectionDockerDb `yaml:"db"`
+	}
+	// SectionCore is sub section of config.
+	SectionCore struct {
+		Enabled      bool           `yaml:"enabled"`
+		Mode         string         `yaml:"mode"`
+		Name         string         `yaml:"name"`
+		Host         string         `yaml:"host"`
+		Port         string         `yaml:"port"`
+		MaxPingCount int            `yaml:"max_ping_count"`
+		JwtSecret    string         `yaml:"jwt_secret"`
+		TLS          SectionTLS     `yaml:"tls"`
+		AutoTLS      SectionAutoTLS `yaml:"auto_tls"`
+	}
 
-// SectionCore is sub section of config.
-type SectionCore struct {
-	Enabled      bool           `yaml:"enabled"`
-	Mode         string         `yaml:"mode"`
-	Name         string         `yaml:"name"`
-	Host         string         `yaml:"host"`
-	Port         string         `yaml:"port"`
-	MaxPingCount int            `yaml:"max_ping_count"`
-	JwtSecret    string         `yaml:"jwt_secret"`
-	TLS          SectionTLS     `yaml:"tls"`
-	AutoTLS      SectionAutoTLS `yaml:"auto_tls"`
-}
+	// SectionTLS support tls
+	SectionTLS struct {
+		Port     string `yaml:"port"`
+		CertPath string `yaml:"cert_path"`
+		KeyPath  string `yaml:"key_path"`
+	}
 
-// SectionTLS support tls
-type SectionTLS struct {
-	Port     string `yaml:"port"`
-	CertPath string `yaml:"cert_path"`
-	KeyPath  string `yaml:"key_path"`
-}
+	// SectionAutoTLS support Let's Encrypt setting.
+	SectionAutoTLS struct {
+		Enabled bool   `yaml:"enabled"`
+		Folder  string `yaml:"folder"`
+		Host    string `yaml:"host"`
+	}
 
-// SectionAutoTLS support Let's Encrypt setting.
-type SectionAutoTLS struct {
-	Enabled bool   `yaml:"enabled"`
-	Folder  string `yaml:"folder"`
-	Host    string `yaml:"host"`
-}
+	// SectionLog is sub section of config.
+	SectionLog struct {
+		Writers        string `yaml:"writers"`
+		LoggerLevel    string `yaml:"logger_level"`
+		LoggerFile     string `yaml:"logger_file"`
+		LogFormatText  bool   `yaml:"log_format_text"`
+		RollingPolicy  string `yaml:"rollingPolicy"`
+		LogRotateDate  int    `yaml:"log_rotate_date"`
+		LogRotateSize  int    `yaml:"log_rotate_size"`
+		LogBackupCount int    `yaml:"log_backup_count"`
+	}
 
-// SectionLog is sub section of config.
-type SectionLog struct {
-	Writers        string `yaml:"writers"`
-	LoggerLevel    string `yaml:"logger_level"`
-	LoggerFile     string `yaml:"logger_file"`
-	LogFormatText  bool   `yaml:"log_format_text"`
-	RollingPolicy  string `yaml:"rollingPolicy"`
-	LogRotateDate  int    `yaml:"log_rotate_date"`
-	LogRotateSize  int    `yaml:"log_rotate_size"`
-	LogBackupCount int    `yaml:"log_backup_count"`
-}
+	// SectionDb is sub section of config.
+	SectionDb struct {
+		Name     string `yaml:"name"`
+		Addr     string `yaml:"addr"`
+		Username string `yaml:"username"`
+		Password string `yaml:"password"`
+	}
 
-// SectionDb is sub section of config.
-type SectionDb struct {
-	Name     string `yaml:"name"`
-	Addr     string `yaml:"addr"`
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
-}
-
-// SectionDb is sub section of config.
-type SectionDockerDb struct {
-	Name     string `yaml:"name"`
-	Addr     string `yaml:"addr"`
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
-}
+	// SectionDb is sub section of config.
+	SectionDockerDb struct {
+		Name     string `yaml:"name"`
+		Addr     string `yaml:"addr"`
+		Username string `yaml:"username"`
+		Password string `yaml:"password"`
+	}
+)
 
 func Init(confPath string) error {
 
