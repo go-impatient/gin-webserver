@@ -1,4 +1,4 @@
-package conf
+package config
 //
 //import (
 //	"bytes"
@@ -21,8 +21,8 @@ package conf
 //  jwt_secret: "Rtg8BPKNEf2mB4mgvKONGPZZQSaJWNLijxR42qRgq0iBb5"
 //  tls:
 //    port: "9098"
-//    cert_path: ""                 # src/conf/server.crt
-//    key_path: ""                  # src/conf/server.key
+//    cert_path: ""                 # src/config/server.crt
+//    key_path: ""                  # src/config/server.key
 //  auto_tls:
 //    enabled: false                # Automatically install TLS certificates from Let's Encrypt.
 //    folder: ".cache"              # folder for storing TLS certificates
@@ -47,7 +47,7 @@ package conf
 //		Db       SectionDb       `yaml:"db"`
 //		DockerDb SectionDockerDb `yaml:"db"`
 //	}
-//	// SectionCore is sub section of conf.
+//	// SectionCore is sub section of config.
 //	SectionCore struct {
 //		Enabled      bool           `yaml:"enabled"`
 //		Mode         string         `yaml:"mode"`
@@ -74,7 +74,7 @@ package conf
 //		Host    string `yaml:"host"`
 //	}
 //
-//	// SectionLog is sub section of conf.
+//	// SectionLog is sub section of config.
 //	SectionLog struct {
 //		Writers        string `yaml:"writers"`
 //		LoggerLevel    string `yaml:"logger_level"`
@@ -86,7 +86,7 @@ package conf
 //		LogBackupCount int    `yaml:"log_backup_count"`
 //	}
 //
-//	// SectionDb is sub section of conf.
+//	// SectionDb is sub section of config.
 //	SectionDb struct {
 //		Name     string `yaml:"name"`
 //		Addr     string `yaml:"addr"`
@@ -94,7 +94,7 @@ package conf
 //		Password string `yaml:"password"`
 //	}
 //
-//	// SectionDb is sub section of conf.
+//	// SectionDb is sub section of config.
 //	SectionDockerDb struct {
 //		Name     string `yaml:"name"`
 //		Addr     string `yaml:"addr"`
@@ -118,7 +118,7 @@ package conf
 //
 //// 加载配置文件
 //func initConfig(confPath string) error {
-//	var conf Config
+//	var config Config
 //
 //	// 设置配置文件格式为YAML
 //	viper.SetConfigType("yaml")
@@ -137,19 +137,19 @@ package conf
 //		viper.SetConfigFile(confPath)
 //	} else {
 //		// 如果没有指定配置文件，则解析默认的配置文件
-//		// Search conf in home directory with name ".bear" (without extension).
+//		// Search config in home directory with name ".bear" (without extension).
 //		viper.AddConfigPath("/etc/bear/")
 //		viper.AddConfigPath("$HOME/.bear")
 //		viper.AddConfigPath(".")
-//		viper.SetConfigName("conf")
+//		viper.SetConfigName("config")
 //	}
 //
-//	// If a conf file is found, read it in.
+//	// If a config file is found, read it in.
 //	if err := viper.ReadInConfig(); err != nil {
-//		fmt.Println("Using conf file:", viper.ConfigFileUsed())
+//		fmt.Println("Using config file:", viper.ConfigFileUsed())
 //		return err
 //	} else {
-//		// load default conf
+//		// load default config
 //		err := viper.ReadConfig(bytes.NewBuffer(defaultConf))
 //		if err != nil {
 //			return err
@@ -170,31 +170,31 @@ package conf
 //	})
 //
 //	// Core
-//	conf.Core.Enabled = viper.GetBool("core.enabled")
-//	conf.Core.Mode = viper.GetString("core.mode")
-//	conf.Core.Name = viper.GetString("core.name")
-//	conf.Core.Host = viper.GetString("core.host")
-//	conf.Core.Port = viper.GetString("core.port")
-//	conf.Core.MaxPingCount = viper.GetInt("core.max_ping_count")
-//	conf.Core.JwtSecret = viper.GetString("core.jwt_secret")
-//	conf.Core.TLS.Port = viper.GetString("core.tls.port")
-//	conf.Core.TLS.CertPath = viper.GetString("core.tls.cert_path")
-//	conf.Core.TLS.KeyPath = viper.GetString("core.tls.key_path")
-//	conf.Core.AutoTLS.Enabled = viper.GetBool("core.auto_tls.enabled")
-//	conf.Core.AutoTLS.Folder = viper.GetString("core.auto_tls.folder")
-//	conf.Core.AutoTLS.Host = viper.GetString("core.auto_tls.host")
+//	config.Core.Enabled = viper.GetBool("core.enabled")
+//	config.Core.Mode = viper.GetString("core.mode")
+//	config.Core.Name = viper.GetString("core.name")
+//	config.Core.Host = viper.GetString("core.host")
+//	config.Core.Port = viper.GetString("core.port")
+//	config.Core.MaxPingCount = viper.GetInt("core.max_ping_count")
+//	config.Core.JwtSecret = viper.GetString("core.jwt_secret")
+//	config.Core.TLS.Port = viper.GetString("core.tls.port")
+//	config.Core.TLS.CertPath = viper.GetString("core.tls.cert_path")
+//	config.Core.TLS.KeyPath = viper.GetString("core.tls.key_path")
+//	config.Core.AutoTLS.Enabled = viper.GetBool("core.auto_tls.enabled")
+//	config.Core.AutoTLS.Folder = viper.GetString("core.auto_tls.folder")
+//	config.Core.AutoTLS.Host = viper.GetString("core.auto_tls.host")
 //
 //	// Db
-//	conf.Db.Name = viper.GetString("db.name")
-//	conf.Db.Addr = viper.GetString("db.addr")
-//	conf.Db.Username = viper.GetString("db.username")
-//	conf.Db.Password = viper.GetString("db.password")
+//	config.Db.Name = viper.GetString("db.name")
+//	config.Db.Addr = viper.GetString("db.addr")
+//	config.Db.Username = viper.GetString("db.username")
+//	config.Db.Password = viper.GetString("db.password")
 //
 //	// DockerDb
-//	conf.DockerDb.Name = viper.GetString("docker_db.name")
-//	conf.DockerDb.Addr = viper.GetString("docker_db.addr")
-//	conf.DockerDb.Username = viper.GetString("docker_db.username")
-//	conf.DockerDb.Password = viper.GetString("docker_db.password")
+//	config.DockerDb.Name = viper.GetString("docker_db.name")
+//	config.DockerDb.Addr = viper.GetString("docker_db.addr")
+//	config.DockerDb.Username = viper.GetString("docker_db.username")
+//	config.DockerDb.Password = viper.GetString("docker_db.password")
 //
 //	return nil
 //}

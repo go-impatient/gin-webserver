@@ -1,4 +1,4 @@
-package conf
+package config
 
 import (
 	"bytes"
@@ -8,6 +8,8 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/moocss/go-webserver/src/log"
 	"github.com/spf13/viper"
+	"github.com/moocss/go-webserver/src/server"
+	"github.com/moocss/go-webserver/src/util"
 )
 
 var defaultConfig = []byte(``)
@@ -19,7 +21,7 @@ type (
 		Db   *ConfigDb   `yaml:"db"`
 		Mail *ConfigMail `yaml:"mail"`
 	}
-	// ConfigCore is sub section of conf.
+	// ConfigCore is sub section of config.
 	ConfigCore struct {
 		Enabled      bool           `yaml:"enabled"`
 		Mode         string         `yaml:"mode"`
@@ -49,7 +51,7 @@ type (
 		Host    string `yaml:"host"`
 	}
 
-	// SectionLog is sub section of conf.
+	// SectionLog is sub section of config.
 	ConfigLog struct {
 		Writers        string `yaml:"writers"`
 		LoggerLevel    string `yaml:"logger_level"`
@@ -61,7 +63,7 @@ type (
 		LogBackupCount int    `yaml:"log_backup_count"`
 	}
 
-	// SectionDb is sub section of conf.
+	// SectionDb is sub section of config.
 	ConfigDb struct {
 		Unix            string `yaml:"unix"`
 		Host            string `yaml:"host"`
@@ -76,7 +78,7 @@ type (
 		ConnMaxLifeTime int    `yaml:"conn_max_lift_time"`
 	}
 
-	// SectionMail is sub section of conf
+	// SectionMail is sub section of config
 	ConfigMail struct {
 		Enable   int    `yaml:"enable"`
 		Smtp     string `yaml:"smtp"`
@@ -101,7 +103,7 @@ func Init(confPath string) error {
 
 // 加载配置文件
 func initConfig(confPath string) error {
-	var conf Config
+	var conf *Config
 
 	// 设置配置文件格式为YAML
 	viper.SetConfigType("yaml")
@@ -120,23 +122,23 @@ func initConfig(confPath string) error {
 		viper.SetConfigFile(confPath)
 	} else {
 		// 如果没有指定配置文件，则解析默认的配置文件
-		// Search conf in home directory with name ".webserver" (without extension).
+		// Search config in home directory with name ".webserver" (without extension).
 		viper.AddConfigPath("/etc/webserver/")
 		viper.AddConfigPath("$HOME/.webserver")
 		viper.AddConfigPath(".")
-		viper.SetConfigName("conf")
+		viper.SetConfigName("config")
 	}
 
-	// If a conf file is found, read it in.
+	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println("Using conf file:", viper.ConfigFileUsed())
+		fmt.Println("Using config file:", viper.ConfigFileUsed())
 		return err
 	} else {
-		// load default conf
+		// load default config
 		err := viper.ReadConfig(bytes.NewBuffer(defaultConfig))
 		if err != nil {
-			return err
 			log.Fatal("读取默认失败: " + err.Error())
+			return err
 		}
 	}
 
@@ -165,17 +167,4 @@ func watchConfig() {
 	viper.OnConfigChange(func(e fsnotify.Event) {
 		log.Infof("Config file changed: %s", e.Name)
 	})
-}
-
-// 项目
-type bear struct {
-	C *Config
-	// Cache *storer.CacheStore
-	// ...
-}
-
-// Bear 包含全局信息，更重要是配置信息
-var Bear = bear{
-	C: &Config{},
-	// ...
 }

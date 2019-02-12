@@ -18,12 +18,35 @@ import (
 	"github.com/moocss/go-webserver/src/router/middleware"
 	"github.com/moocss/go-webserver/src/storer"
 	"golang.org/x/crypto/acme/autocert"
+	"github.com/jinzhu/gorm"
+	"github.com/moocss/go-webserver/src/util"
+	"github.com/sevennt/wzap"
+	"github.com/spf13/viper"
 )
 
+// WebServer 项目
+type WebServer struct {
+	config *config.Config
+	// cache *storer.CacheStore
+	// ...
+}
+
+var (
+	Gorm           	*gorm.DB
+	db   						*storer.Database
+	Mail            *util.SendMail
+)
+
+func NewWebServer(cfg *config.Config) *WebServer {
+	return &WebServer{
+		config: cfg,
+	}
+}
+
 // Init returns a app instance
-func Init() *gin.Engine {
+func Init(w *WebServer) *gin.Engine {
 	// Set gin mode.
-	gin.SetMode(config.Bear.C.Core.Mode)
+	gin.SetMode(w.config.Core.Mode)
 
 	// Create the Gin engine.
 	g := gin.New()
@@ -38,54 +61,75 @@ func Init() *gin.Engine {
 	return g
 }
 
-func autoTLSServer() *http.Server {
+// Init initializes mail pkg.
+func InitMail(w *WebServer) {
+	Mail = util.SendMailNew(&util.SendMail{
+		Enable: w.config.Mail.Enable,
+		Smtp: w.config.Mail.Smtp,
+		Port: w.config.Mail.Port,
+		User: w.config.Mail.Username,
+		Pass: w.config.Mail.Password,
+	})
+}
+
+// Init initializes log pkg.
+func InitLog() {
+	logger := wzap.New(
+		wzap.WithOutputKV(viper.GetStringMap("logger.console")),
+		wzap.WithOutputKV(viper.GetStringMap("logger.zap")),
+	)
+	wzap.SetDefaultLogger(logger)
+}
+
+
+func autoTLSServer(w *WebServer) *http.Server {
 	m := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
-		HostPolicy: autocert.HostWhitelist(config.Bear.C.Core.AutoTLS.Host),
-		Cache:      autocert.DirCache(config.Bear.C.Core.AutoTLS.Folder),
+		HostPolicy: autocert.HostWhitelist(w.config.Core.AutoTLS.Host),
+		Cache:      autocert.DirCache(w.config.Core.AutoTLS.Folder),
 	}
 	return &http.Server{
-		Addr:      	":https",
-		TLSConfig: 	&tls.Config{GetCertificate: m.GetCertificate},
-		Handler:  	Init(),
-	}
-}
-
-func defaultTLSServer() *http.Server {
-	return &http.Server{
-		Addr: 			"0.0.0.0:" + config.Bear.C.Core.TLS.Port,
-		Handler:	  Init(),
+		Addr:      ":https",
+		TLSConfig: &tls.Config{GetCertificate: m.GetCertificate},
+		Handler:   Init(w),
 	}
 }
 
-func defaultServer() *http.Server {
+func defaultTLSServer(w *WebServer) *http.Server {
 	return &http.Server{
-		Addr: 			"0.0.0.0:" + config.Bear.C.Core.Port,
-		Handler:	  Init(),
+		Addr:    "0.0.0.0:" + w.config.Core.TLS.Port,
+		Handler: Init(w),
+	}
+}
+
+func defaultServer(w *WebServer) *http.Server {
+	return &http.Server{
+		Addr:    "0.0.0.0:" + w.config.Core.Port,
+		Handler: Init(w),
 	}
 }
 
 // RunHTTPServer provide run http or https protocol.
-func RunHTTPServer() (err error) {
-	if !config.Bear.C.Core.Enabled {
+func RunHTTPServer(w *WebServer) (err error) {
+	if !w.config.Core.Enabled {
 		log.Debug("httpd server is disabled.")
 		return nil
 	}
 
-	if config.Bear.C.Core.AutoTLS.Enabled {
-		s := autoTLSServer()
+	if w.config.Core.AutoTLS.Enabled {
+		s := autoTLSServer(w)
 		handleSignal(s)
 		log.Infof("1. Start to listening the incoming requests on https address")
 		err = s.ListenAndServeTLS("", "")
-	} else if config.Bear.C.Core.TLS.CertPath != "" && config.Bear.C.Core.TLS.KeyPath != "" {
-		s := defaultTLSServer()
+	} else if w.config.Core.TLS.CertPath != "" && w.config.Core.TLS.KeyPath != "" {
+		s := defaultTLSServer(w)
 		handleSignal(s)
-		log.Infof("2. Start to listening the incoming requests on https address: %s", config.Bear.C.Core.TLS.Port)
-		err = s.ListenAndServeTLS(config.Bear.C.Core.TLS.CertPath, config.Bear.C.Core.TLS.KeyPath)
+		log.Infof("2. Start to listening the incoming requests on https address: %s", w.config.Core.TLS.Port)
+		err = s.ListenAndServeTLS(w.config.Core.TLS.CertPath, w.config.Core.TLS.KeyPath)
 	} else {
-		s := defaultServer()
+		s := defaultServer(w)
 		handleSignal(s)
-		log.Infof("3. Start to listening the incoming requests on http address: %s", config.Bear.C.Core.Port)
+		log.Infof("3. Start to listening the incoming requests on http address: %s", w.config.Core.Port)
 		err = s.ListenAndServe()
 	}
 
@@ -112,11 +156,11 @@ func handleSignal(server *http.Server) {
 }
 
 // PingServer
-func PingServer() (err error) {
-	maxPingConf := config.Bear.C.Core.MaxPingCount
+func PingServer(w *WebServer) (err error) {
+	maxPingConf := w.config.Core.MaxPingCount
 	for i := 0; i < maxPingConf; i++ {
 		// Ping the server by sending a GET request to `/health`.
-		resp, err := http.Get("http://localhost:" + config.Bear.C.Core.Port + "/sd/health")
+		resp, err := http.Get("http://localhost:" + w.config.Core.Port + "/sd/health")
 		if err == nil && resp.StatusCode == 200 {
 			return nil
 		}
