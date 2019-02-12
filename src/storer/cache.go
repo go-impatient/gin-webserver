@@ -15,10 +15,11 @@ type CacheStore struct {
 	gocache        *cache.Cache
 }
 
-//InitCacheStore initializes the cache store
-func InitCacheStore() *CacheStore {
+// NewCacheStore initializes the cache store
+func NewCacheStore() *CacheStore {
+	return &CacheStore{
 
-	return nil
+	}
 }
 
 //Set

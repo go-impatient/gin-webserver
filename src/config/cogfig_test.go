@@ -1,4 +1,4 @@
-package config
+package conf
 
 import (
 	"testing"
@@ -25,11 +25,11 @@ func (suite *ConfigTestSuite) SetupTest() {
 	var err error
 	err = Init("")
 	if err != nil {
-		panic("failed to load default config.yml")
+		panic("failed to load default conf.yml")
 	}
 	err = Init("src/conf")
 	if err != nil {
-		panic("failed to load config.yml from file")
+		panic("failed to load conf.yml from file")
 	}
 }
 
@@ -43,8 +43,8 @@ func (suite *ConfigTestSuite) TestValidateConfDefault() {
 	assert.Equal(suite.T(), 2, suite.ConfDefault.Core.MaxPingCount)
 	assert.Equal(suite.T(), "Rtg8BPKNEf2mB4mgvKONGPZZQSaJWNLijxR42qRgq0iBb5", suite.ConfDefault.Core.JwtSecret)
 	assert.Equal(suite.T(), "9098", suite.ConfDefault.Core.TLS.Port)
-	assert.Equal(suite.T(), "src/config/server.crt", suite.ConfDefault.Core.TLS.CertPath)
-	assert.Equal(suite.T(), "src/config/server.key", suite.ConfDefault.Core.TLS.KeyPath)
+	assert.Equal(suite.T(), "src/conf/server.crt", suite.ConfDefault.Core.TLS.CertPath)
+	assert.Equal(suite.T(), "src/conf/server.key", suite.ConfDefault.Core.TLS.KeyPath)
 
 	// Log
 	assert.Equal(suite.T(), "file,stdout", suite.ConfDefault.Log.Writers)

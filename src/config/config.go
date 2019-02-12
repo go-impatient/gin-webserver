@@ -1,4 +1,4 @@
-package config
+package conf
 
 import (
 	"bytes"
@@ -14,75 +14,75 @@ var defaultConfig = []byte(``)
 
 type (
 	Config struct {
-		Core     			*ConfigCore     	`yaml:"core"`
-		Log      			*ConfigLog      	`yaml:"log"`
-		Db       			*ConfigDb       	`yaml:"db"`
-		Mail					*ConfigMail				`yaml:"mail"`
+		Core *ConfigCore `yaml:"core"`
+		Log  *ConfigLog  `yaml:"log"`
+		Db   *ConfigDb   `yaml:"db"`
+		Mail *ConfigMail `yaml:"mail"`
 	}
-	// ConfigCore is sub section of config.
+	// ConfigCore is sub section of conf.
 	ConfigCore struct {
-		Enabled      	bool           		`yaml:"enabled"`
-		Mode         	string         		`yaml:"mode"`
-		Name         	string         		`yaml:"name"`
-		Host         	string         		`yaml:"host"`
-		Port         	string         		`yaml:"port"`
-		ReadTimeout  	int								`yaml:"read_timeout"`
-		WriteTimeout 	int								`yaml:"write_timeout"`
-		IdleTimeout  	int								`yaml:"idle_timeout"`
-		MaxPingCount 	int            		`yaml:"max_ping_count"`
-		JwtSecret    	string         		`yaml:"jwt_secret"`
-		TLS          	*ConfigTLS     		`yaml:"tls"`
-		AutoTLS      	*ConfigAutoTLS 		`yaml:"auto_tls"`
+		Enabled      bool           `yaml:"enabled"`
+		Mode         string         `yaml:"mode"`
+		Name         string         `yaml:"name"`
+		Host         string         `yaml:"host"`
+		Port         string         `yaml:"port"`
+		ReadTimeout  int            `yaml:"read_timeout"`
+		WriteTimeout int            `yaml:"write_timeout"`
+		IdleTimeout  int            `yaml:"idle_timeout"`
+		MaxPingCount int            `yaml:"max_ping_count"`
+		JwtSecret    string         `yaml:"jwt_secret"`
+		TLS          *ConfigTLS     `yaml:"tls"`
+		AutoTLS      *ConfigAutoTLS `yaml:"auto_tls"`
 	}
 
 	// ConfigTLS support tls
 	ConfigTLS struct {
-		Port     			string 						`yaml:"port"`
-		CertPath 			string 						`yaml:"cert_path"`
-		KeyPath  			string 						`yaml:"key_path"`
+		Port     string `yaml:"port"`
+		CertPath string `yaml:"cert_path"`
+		KeyPath  string `yaml:"key_path"`
 	}
 
 	// SectionAutoTLS support Let's Encrypt setting.
 	ConfigAutoTLS struct {
-		Enabled 			bool   						`yaml:"enabled"`
-		Folder  			string 						`yaml:"folder"`
-		Host    			string 						`yaml:"host"`
+		Enabled bool   `yaml:"enabled"`
+		Folder  string `yaml:"folder"`
+		Host    string `yaml:"host"`
 	}
 
-	// SectionLog is sub section of config.
+	// SectionLog is sub section of conf.
 	ConfigLog struct {
-		Writers        string 					`yaml:"writers"`
-		LoggerLevel    string 					`yaml:"logger_level"`
-		LoggerFile     string 					`yaml:"logger_file"`
-		LogFormatText  bool   					`yaml:"log_format_text"`
-		RollingPolicy  string 					`yaml:"rolling_policy"`
-		LogRotateDate  int    					`yaml:"log_rotate_date"`
-		LogRotateSize  int    					`yaml:"log_rotate_size"`
-		LogBackupCount int    					`yaml:"log_backup_count"`
+		Writers        string `yaml:"writers"`
+		LoggerLevel    string `yaml:"logger_level"`
+		LoggerFile     string `yaml:"logger_file"`
+		LogFormatText  bool   `yaml:"log_format_text"`
+		RollingPolicy  string `yaml:"rolling_policy"`
+		LogRotateDate  int    `yaml:"log_rotate_date"`
+		LogRotateSize  int    `yaml:"log_rotate_size"`
+		LogBackupCount int    `yaml:"log_backup_count"`
 	}
 
-	// SectionDb is sub section of config.
+	// SectionDb is sub section of conf.
 	ConfigDb struct {
-		Unix            string					`yaml:"unix"`
-		Host            string					`yaml:"host"`
-		Port            string					`yaml:"port"`
-		Charset         string					`yaml:"charset"`
-		DbName          string					`yaml:"db_name"`
-		Username        string					`yaml:"username"`
-		Password        string					`yaml:"password"`
-		TablePrefix     string					`yaml:"table_prefix"`
-		MaxIdleConns    int							`yaml:"max_idle_conns"`
-		MaxOpenConns    int							`yaml:"max_open_conns"`
-		ConnMaxLifeTime int							`yaml:"conn_max_lift_time"`
+		Unix            string `yaml:"unix"`
+		Host            string `yaml:"host"`
+		Port            string `yaml:"port"`
+		Charset         string `yaml:"charset"`
+		DbName          string `yaml:"db_name"`
+		Username        string `yaml:"username"`
+		Password        string `yaml:"password"`
+		TablePrefix     string `yaml:"table_prefix"`
+		MaxIdleConns    int    `yaml:"max_idle_conns"`
+		MaxOpenConns    int    `yaml:"max_open_conns"`
+		ConnMaxLifeTime int    `yaml:"conn_max_lift_time"`
 	}
 
-	// SectionMail is sub section of config
+	// SectionMail is sub section of conf
 	ConfigMail struct {
-		Enable  				int							`yaml:"enable"`
-		Smtp    				string					`yaml:"smtp"`
-		Port    				int							`yaml:"port"`
-		Username    		string					`yaml:"username"`
-		Password    		string					`yaml:"password"`
+		Enable   int    `yaml:"enable"`
+		Smtp     string `yaml:"smtp"`
+		Port     int    `yaml:"port"`
+		Username string `yaml:"username"`
+		Password string `yaml:"password"`
 	}
 )
 
@@ -120,19 +120,19 @@ func initConfig(confPath string) error {
 		viper.SetConfigFile(confPath)
 	} else {
 		// 如果没有指定配置文件，则解析默认的配置文件
-		// Search config in home directory with name ".webserver" (without extension).
+		// Search conf in home directory with name ".webserver" (without extension).
 		viper.AddConfigPath("/etc/webserver/")
 		viper.AddConfigPath("$HOME/.webserver")
 		viper.AddConfigPath(".")
-		viper.SetConfigName("config")
+		viper.SetConfigName("conf")
 	}
 
-	// If a config file is found, read it in.
+	// If a conf file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		fmt.Println("Using conf file:", viper.ConfigFileUsed())
 		return err
 	} else {
-		// load default config
+		// load default conf
 		err := viper.ReadConfig(bytes.NewBuffer(defaultConfig))
 		if err != nil {
 			return err

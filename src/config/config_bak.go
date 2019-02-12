@@ -1,4 +1,4 @@
-package config
+package conf
 //
 //import (
 //	"bytes"
@@ -21,8 +21,8 @@ package config
 //  jwt_secret: "Rtg8BPKNEf2mB4mgvKONGPZZQSaJWNLijxR42qRgq0iBb5"
 //  tls:
 //    port: "9098"
-//    cert_path: ""                 # src/config/server.crt
-//    key_path: ""                  # src/config/server.key
+//    cert_path: ""                 # src/conf/server.crt
+//    key_path: ""                  # src/conf/server.key
 //  auto_tls:
 //    enabled: false                # Automatically install TLS certificates from Let's Encrypt.
 //    folder: ".cache"              # folder for storing TLS certificates
@@ -47,7 +47,7 @@ package config
 //		Db       SectionDb       `yaml:"db"`
 //		DockerDb SectionDockerDb `yaml:"db"`
 //	}
-//	// SectionCore is sub section of config.
+//	// SectionCore is sub section of conf.
 //	SectionCore struct {
 //		Enabled      bool           `yaml:"enabled"`
 //		Mode         string         `yaml:"mode"`
@@ -74,7 +74,7 @@ package config
 //		Host    string `yaml:"host"`
 //	}
 //
-//	// SectionLog is sub section of config.
+//	// SectionLog is sub section of conf.
 //	SectionLog struct {
 //		Writers        string `yaml:"writers"`
 //		LoggerLevel    string `yaml:"logger_level"`
@@ -86,7 +86,7 @@ package config
 //		LogBackupCount int    `yaml:"log_backup_count"`
 //	}
 //
-//	// SectionDb is sub section of config.
+//	// SectionDb is sub section of conf.
 //	SectionDb struct {
 //		Name     string `yaml:"name"`
 //		Addr     string `yaml:"addr"`
@@ -94,7 +94,7 @@ package config
 //		Password string `yaml:"password"`
 //	}
 //
-//	// SectionDb is sub section of config.
+//	// SectionDb is sub section of conf.
 //	SectionDockerDb struct {
 //		Name     string `yaml:"name"`
 //		Addr     string `yaml:"addr"`
@@ -137,19 +137,19 @@ package config
 //		viper.SetConfigFile(confPath)
 //	} else {
 //		// 如果没有指定配置文件，则解析默认的配置文件
-//		// Search config in home directory with name ".bear" (without extension).
+//		// Search conf in home directory with name ".bear" (without extension).
 //		viper.AddConfigPath("/etc/bear/")
 //		viper.AddConfigPath("$HOME/.bear")
 //		viper.AddConfigPath(".")
-//		viper.SetConfigName("config")
+//		viper.SetConfigName("conf")
 //	}
 //
-//	// If a config file is found, read it in.
+//	// If a conf file is found, read it in.
 //	if err := viper.ReadInConfig(); err != nil {
-//		fmt.Println("Using config file:", viper.ConfigFileUsed())
+//		fmt.Println("Using conf file:", viper.ConfigFileUsed())
 //		return err
 //	} else {
-//		// load default config
+//		// load default conf
 //		err := viper.ReadConfig(bytes.NewBuffer(defaultConf))
 //		if err != nil {
 //			return err
