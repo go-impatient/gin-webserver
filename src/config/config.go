@@ -10,96 +10,79 @@ import (
 	"github.com/spf13/viper"
 )
 
-var defaultConf = []byte(`
-core:
-  enabled: true                   # enabale httpd server
-  mode: "debug"                   # 开发模式, debug, release, test
-  name: "apiserver"               # API Server的名字
-  address: ""                     # ip address to bind (default: any)
-  port: "9090"                    # HTTP 绑定端口.
-  max_ping_count: 2               # pingServer函数try的次数
-  jwt_secret: "Rtg8BPKNEf2mB4mgvKONGPZZQSaJWNLijxR42qRgq0iBb5"
-  tls:
-    port: "9098"
-    cert_path: ""                 # src/config/server.crt
-    key_path: ""                  # src/config/server.key
-  auto_tls:
-    enabled: false                # Automatically install TLS certificates from Let's Encrypt.
-    folder: ".cache"              # folder for storing TLS certificates
-    host: ""                      # which domains the Let's Encrypt will attempt
-db:
-  name: "db_apiserver"
-  addr: "127.0.0.1:3306"
-  username: "root"
-  password: "123456"
-
-docker_db:
-  name: "db_apiserver"
-  addr: "127.0.0.1:3306"
-  username: "root"
-  password: "123456"
-`)
+var defaultConfig = []byte(``)
 
 type (
 	Config struct {
-		Core     SectionCore     `yaml:"core"`
-		Log      SectionLog      `yaml:"log"`
-		Db       SectionDb       `yaml:"db"`
-		DockerDb SectionDockerDb `yaml:"db"`
+		Core     			*ConfigCore     	`yaml:"core"`
+		Log      			*ConfigLog      	`yaml:"log"`
+		Db       			*ConfigDb       	`yaml:"db"`
+		Mail					*ConfigMail				`yaml:"mail"`
 	}
-	// SectionCore is sub section of config.
-	SectionCore struct {
-		Enabled      bool           `yaml:"enabled"`
-		Mode         string         `yaml:"mode"`
-		Name         string         `yaml:"name"`
-		Host         string         `yaml:"host"`
-		Port         string         `yaml:"port"`
-		MaxPingCount int            `yaml:"max_ping_count"`
-		JwtSecret    string         `yaml:"jwt_secret"`
-		TLS          SectionTLS     `yaml:"tls"`
-		AutoTLS      SectionAutoTLS `yaml:"auto_tls"`
+	// ConfigCore is sub section of config.
+	ConfigCore struct {
+		Enabled      	bool           		`yaml:"enabled"`
+		Mode         	string         		`yaml:"mode"`
+		Name         	string         		`yaml:"name"`
+		Host         	string         		`yaml:"host"`
+		Port         	string         		`yaml:"port"`
+		ReadTimeout  	int								`yaml:"read_timeout"`
+		WriteTimeout 	int								`yaml:"write_timeout"`
+		IdleTimeout  	int								`yaml:"idle_timeout"`
+		MaxPingCount 	int            		`yaml:"max_ping_count"`
+		JwtSecret    	string         		`yaml:"jwt_secret"`
+		TLS          	*ConfigTLS     		`yaml:"tls"`
+		AutoTLS      	*ConfigAutoTLS 		`yaml:"auto_tls"`
 	}
 
-	// SectionTLS support tls
-	SectionTLS struct {
-		Port     string `yaml:"port"`
-		CertPath string `yaml:"cert_path"`
-		KeyPath  string `yaml:"key_path"`
+	// ConfigTLS support tls
+	ConfigTLS struct {
+		Port     			string 						`yaml:"port"`
+		CertPath 			string 						`yaml:"cert_path"`
+		KeyPath  			string 						`yaml:"key_path"`
 	}
 
 	// SectionAutoTLS support Let's Encrypt setting.
-	SectionAutoTLS struct {
-		Enabled bool   `yaml:"enabled"`
-		Folder  string `yaml:"folder"`
-		Host    string `yaml:"host"`
+	ConfigAutoTLS struct {
+		Enabled 			bool   						`yaml:"enabled"`
+		Folder  			string 						`yaml:"folder"`
+		Host    			string 						`yaml:"host"`
 	}
 
 	// SectionLog is sub section of config.
-	SectionLog struct {
-		Writers        string `yaml:"writers"`
-		LoggerLevel    string `yaml:"logger_level"`
-		LoggerFile     string `yaml:"logger_file"`
-		LogFormatText  bool   `yaml:"log_format_text"`
-		RollingPolicy  string `yaml:"rollingPolicy"`
-		LogRotateDate  int    `yaml:"log_rotate_date"`
-		LogRotateSize  int    `yaml:"log_rotate_size"`
-		LogBackupCount int    `yaml:"log_backup_count"`
+	ConfigLog struct {
+		Writers        string 					`yaml:"writers"`
+		LoggerLevel    string 					`yaml:"logger_level"`
+		LoggerFile     string 					`yaml:"logger_file"`
+		LogFormatText  bool   					`yaml:"log_format_text"`
+		RollingPolicy  string 					`yaml:"rolling_policy"`
+		LogRotateDate  int    					`yaml:"log_rotate_date"`
+		LogRotateSize  int    					`yaml:"log_rotate_size"`
+		LogBackupCount int    					`yaml:"log_backup_count"`
 	}
 
 	// SectionDb is sub section of config.
-	SectionDb struct {
-		Name     string `yaml:"name"`
-		Addr     string `yaml:"addr"`
-		Username string `yaml:"username"`
-		Password string `yaml:"password"`
+	ConfigDb struct {
+		Unix            string					`yaml:"unix"`
+		Host            string					`yaml:"host"`
+		Port            string					`yaml:"port"`
+		Charset         string					`yaml:"charset"`
+		DbName          string					`yaml:"db_name"`
+		Username        string					`yaml:"username"`
+		Password        string					`yaml:"password"`
+		TablePrefix     string					`yaml:"table_prefix"`
+		MaxIdleConns    int							`yaml:"max_idle_conns"`
+		MaxOpenConns    int							`yaml:"max_open_conns"`
+		ConnMaxLifeTime int							`yaml:"conn_max_lift_time"`
 	}
 
-	// SectionDb is sub section of config.
-	SectionDockerDb struct {
-		Name     string `yaml:"name"`
-		Addr     string `yaml:"addr"`
-		Username string `yaml:"username"`
-		Password string `yaml:"password"`
+	// SectionMail is sub section of config
+	ConfigMail struct {
+		Enable  				int							`yaml:"enable"`
+		Smtp    				string					`yaml:"smtp"`
+		Port    				int							`yaml:"port"`
+		Username    		string					`yaml:"username"`
+		Password    		string					`yaml:"password"`
 	}
 )
 
@@ -137,9 +120,9 @@ func initConfig(confPath string) error {
 		viper.SetConfigFile(confPath)
 	} else {
 		// 如果没有指定配置文件，则解析默认的配置文件
-		// Search config in home directory with name ".bear" (without extension).
-		viper.AddConfigPath("/etc/bear/")
-		viper.AddConfigPath("$HOME/.bear")
+		// Search config in home directory with name ".webserver" (without extension).
+		viper.AddConfigPath("/etc/webserver/")
+		viper.AddConfigPath("$HOME/.webserver")
 		viper.AddConfigPath(".")
 		viper.SetConfigName("config")
 	}
@@ -150,7 +133,7 @@ func initConfig(confPath string) error {
 		return err
 	} else {
 		// load default config
-		err := viper.ReadConfig(bytes.NewBuffer(defaultConf))
+		err := viper.ReadConfig(bytes.NewBuffer(defaultConfig))
 		if err != nil {
 			return err
 			log.Fatal("读取默认失败: " + err.Error())
@@ -169,32 +152,9 @@ func initConfig(confPath string) error {
 		log.Infof("Config file changed: %s", e.Name)
 	})
 
-	// Core
-	conf.Core.Enabled = viper.GetBool("core.enabled")
-	conf.Core.Mode = viper.GetString("core.mode")
-	conf.Core.Name = viper.GetString("core.name")
-	conf.Core.Host = viper.GetString("core.host")
-	conf.Core.Port = viper.GetString("core.port")
-	conf.Core.MaxPingCount = viper.GetInt("core.max_ping_count")
-	conf.Core.JwtSecret = viper.GetString("core.jwt_secret")
-	conf.Core.TLS.Port = viper.GetString("core.tls.port")
-	conf.Core.TLS.CertPath = viper.GetString("core.tls.cert_path")
-	conf.Core.TLS.KeyPath = viper.GetString("core.tls.key_path")
-	conf.Core.AutoTLS.Enabled = viper.GetBool("core.auto_tls.enabled")
-	conf.Core.AutoTLS.Folder = viper.GetString("core.auto_tls.folder")
-	conf.Core.AutoTLS.Host = viper.GetString("core.auto_tls.host")
-
-	// Db
-	conf.Db.Name = viper.GetString("db.name")
-	conf.Db.Addr = viper.GetString("db.addr")
-	conf.Db.Username = viper.GetString("db.username")
-	conf.Db.Password = viper.GetString("db.password")
-
-	// DockerDb
-	conf.DockerDb.Name = viper.GetString("docker_db.name")
-	conf.DockerDb.Addr = viper.GetString("docker_db.addr")
-	conf.DockerDb.Username = viper.GetString("docker_db.username")
-	conf.DockerDb.Password = viper.GetString("docker_db.password")
+	//cfg := &Config{
+	//
+	//}
 
 	return nil
 }

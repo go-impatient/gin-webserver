@@ -4,6 +4,9 @@ core:
   name: "apiserver"               # API Server的名字
   host: ""                        # ip address to bind (default: any)
   port: "9090"                    # HTTP 绑定端口.
+  read_timeout: 300               # 读超时时间设置, 单位秒
+  write_timeout: 300              # 写超时时间设置, 单位秒
+  idle_timeout: 300               # 空闲连接超时设置, 单位秒
   max_ping_count: 2               # pingServer函数try的次数
   jwt_secret: "Rtg8BPKNEf2mB4mgvKONGPZZQSaJWNLijxR42qRgq0iBb5"
   tls:
@@ -16,13 +19,21 @@ core:
     host: ""                      # which domains the Let's Encrypt will attempt
 
 db:
-  name: "db_apiserver"
-  addr: "127.0.0.1:3306"
+  db_name: "db_apiserver"
+  host: "127.0.0.1"
+  port: "3306"
   username: "root"
   password: "123456"
+  charset: ""
+  unix: ""
+  table_prefix: ""
+  max_idle_conns: ""
+  max_open_conns: ""
+  conn_max_lift_time: ""
 
-docker_db:
-  name: "db_apiserver"
-  addr: "127.0.0.1:3306"
-  username: "root"
-  password: "123456"
+mail:
+  enabled: 0                       # 是否开启邮箱发送功能
+  smtp_host: "smtp.exmail.qq.com"  # 邮件smtp地址
+  smtp_port: "465"
+  smtp_username: "moocss@163.com"
+  smtp_password: ""

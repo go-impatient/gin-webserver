@@ -27,7 +27,7 @@ func (suite *ConfigTestSuite) SetupTest() {
 	if err != nil {
 		panic("failed to load default config.yml")
 	}
-	err = Init("src/config/config")
+	err = Init("src/conf")
 	if err != nil {
 		panic("failed to load config.yml from file")
 	}

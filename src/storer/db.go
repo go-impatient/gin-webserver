@@ -7,11 +7,13 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/moocss/go-webserver/src/log"
 	"github.com/spf13/viper"
+
+	"github.com/moocss/go-webserver/src/config"
 )
 
 type Database struct {
-	Self *gorm.DB
-	// Docker 	*gorm.DB
+	Self 	*gorm.DB
+	cfg	 	*config.ConfigDb
 }
 
 var DB *Database
