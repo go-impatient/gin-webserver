@@ -5,12 +5,12 @@ import (
 )
 
 type SendMail struct {
-	Enable  int
-	Smtp    string
-	Port    int
-	User    string
-	Pass    string
-	dialer  *gomail.Dialer
+	Enabled  		bool
+	Smtp    		string
+	Port    		int
+	Username    string
+	Password    string
+	dialer  		*gomail.Dialer
 }
 
 type SendMailMessage struct {
@@ -24,12 +24,12 @@ type SendMailMessage struct {
 }
 
 func SendMailNew(mail *SendMail) *SendMail {
-	mail.dialer = gomail.NewPlainDialer(mail.Smtp, mail.Port, mail.User, mail.Pass)
+	mail.dialer = gomail.NewPlainDialer(mail.Smtp, mail.Port, mail.Username, mail.Password)
 	return mail
 }
 
 func (mail *SendMail) Send(msg *SendMailMessage) error {
-	if mail.Enable == 0 {
+	if mail.Enabled {
 		return nil
 	}
 	msg.mail = mail
@@ -43,7 +43,7 @@ func (mail *SendMail) Send(msg *SendMailMessage) error {
 func (m *SendMailMessage) NewMessage() *gomail.Message {
 	mailMsg := gomail.NewMessage()
 	if m.From == "" {
-		mailMsg.SetHeader("From", m.mail.User)
+		mailMsg.SetHeader("From", m.mail.Username)
 	} else {
 		mailMsg.SetHeader("From", m.From)
 	}

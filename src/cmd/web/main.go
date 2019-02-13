@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/moocss/go-webserver/src"
 	"os"
 
 	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/log"
 	"github.com/moocss/go-webserver/src/pkg/version"
-	"github.com/moocss/go-webserver/src/server"
 	"github.com/moocss/go-webserver/src/storer"
 	"github.com/urfave/cli"
 	"golang.org/x/sync/errgroup"
@@ -52,25 +52,21 @@ func start(c *cli.Context) error {
 	storer.DB.Init()
 
 	// 设置默认配置
-	if err := config.Init(c.String("c")); err != nil {
+	cfg, err := config.Init(c.String("c"));
+	if  err != nil {
 		log.Infof("Load yaml config file error: '%v'", err)
+		os.Exit(-1)
 	}
 
-	// overwrite server port and address
-	if c.String("port") != "" {
-		config.Bear.C.Core.Port = c.String("port")
-	}
-	if c.String("host") != "" {
-		config.Bear.C.Core.Host = c.String("host")
-	}
+	app := src.NewApp(&cfg)
 
 	g.Go(func() error {
 		// 启动服务
-		return server.RunHTTPServer()
+		return app.RunHTTPServer()
 	})
 	g.Go(func() error {
 		// 健康检查
-		return server.PingServer()
+		return app.PingServer()
 	})
 
 	if err := g.Wait(); err != nil {
@@ -99,7 +95,7 @@ func run() {
 
 	if err := app.Run(os.Args); err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(-1)
+		os.Exit(1)
 	}
 }
 

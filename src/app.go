@@ -6,22 +6,19 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
-	"strings"
 	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/log"
 	"github.com/moocss/go-webserver/src/router"
 	"github.com/moocss/go-webserver/src/router/middleware"
 	"github.com/moocss/go-webserver/src/storer"
-	"golang.org/x/crypto/acme/autocert"
-	"github.com/jinzhu/gorm"
 	"github.com/moocss/go-webserver/src/util"
 	"github.com/sevennt/wzap"
-	"github.com/spf13/viper"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 var (
@@ -46,8 +43,90 @@ func NewApp(cfg *config.Config) *App {
 	}
 }
 
-// Init returns a app instance
-func InitRouter(app *App) *gin.Engine {
+// Init initializes mail pkg.
+func (app *App)InitMail() {
+	Mail = util.SendMailNew(&util.SendMail{
+		Enabled: app.config.Mail.Enable,
+		Smtp: app.config.Mail.Smtp,
+		Port: app.config.Mail.Port,
+		Username: app.config.Mail.Username,
+		Password: app.config.Mail.Password,
+	})
+}
+
+// Init initializes log pkg.
+func (app *App)InitLog() {
+	wzap.SetDefaultDir("./log/")
+	logger := wzap.New(
+		wzap.WithOutput(
+			wzap.WithLevelCombo(app.config.Log.Zap.Level),
+			wzap.WithPath(app.config.Log.Zap.Path),
+		),
+		wzap.WithOutput(
+			wzap.WithLevelCombo(app.config.Log.Console.Level),
+			wzap.WithColorful(app.config.Log.Console.Color),
+			wzap.WithPrefix(app.config.Log.Console.Prefix),
+		),
+	)
+	wzap.SetDefaultLogger(logger)
+}
+
+// RunHTTPServer provide run http or https protocol.
+func (app *App)RunHTTPServer() (err error) {
+	if !app.config.Core.Enabled {
+		log.Debug("httpd server is disabled.")
+		return nil
+	}
+
+	if app.config.Core.AutoTLS.Enabled {
+		s := autoTLSServer(app)
+		handleSignal(s)
+		log.Infof("1. Start to listening the incoming requests on https address")
+		err = s.ListenAndServeTLS("", "")
+	} else if app.config.Core.TLS.CertPath != "" && app.config.Core.TLS.KeyPath != "" {
+		s := defaultTLSServer(app)
+		handleSignal(s)
+		log.Infof("2. Start to listening the incoming requests on https address: %s", app.config.Core.TLS.Port)
+		err = s.ListenAndServeTLS(app.config.Core.TLS.CertPath, app.config.Core.TLS.KeyPath)
+	} else {
+		s := defaultServer(app)
+		handleSignal(s)
+		log.Infof("3. Start to listening the incoming requests on http address: %s", app.config.Core.Port)
+		err = s.ListenAndServe()
+	}
+
+	return
+}
+
+func autoTLSServer(app *App) *http.Server {
+	m := autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		HostPolicy: autocert.HostWhitelist(app.config.Core.AutoTLS.Host),
+		Cache:      autocert.DirCache(app.config.Core.AutoTLS.Folder),
+	}
+	return &http.Server{
+		Addr:      ":https",
+		TLSConfig: &tls.Config{GetCertificate: m.GetCertificate},
+		Handler:   serve(app),
+	}
+}
+
+func defaultTLSServer(app *App) *http.Server {
+	return &http.Server{
+		Addr:    "0.0.0.0:" + app.config.Core.TLS.Port,
+		Handler: serve(app),
+	}
+}
+
+func defaultServer(app *App) *http.Server {
+	return &http.Server{
+		Addr:    "0.0.0.0:" + app.config.Core.Port,
+		Handler: serve(app),
+	}
+}
+
+// serve returns a app instance
+func serve(app *App) *gin.Engine {
 	// Set gin mode.
 	gin.SetMode(app.config.Core.Mode)
 
@@ -59,81 +138,6 @@ func InitRouter(app *App) *gin.Engine {
 		middleware.RequestId(),
 	)
 	return app.serve
-}
-
-// Init initializes mail pkg.
-func InitMail(app *App) {
-	Mail = util.SendMailNew(&util.SendMail{
-		Enable: app.config.Mail.Enable,
-		Smtp: app.config.Mail.Smtp,
-		Port: app.config.Mail.Port,
-		User: app.config.Mail.Username,
-		Pass: app.config.Mail.Password,
-	})
-}
-
-// Init initializes log pkg.
-func InitLog() {
-	logger := wzap.New(
-		wzap.WithOutputKV(viper.GetStringMap("logger.console")),
-		wzap.WithOutputKV(viper.GetStringMap("logger.zap")),
-	)
-	wzap.SetDefaultLogger(logger)
-}
-
-
-func autoTLSServer(app *App) *http.Server {
-	m := autocert.Manager{
-		Prompt:     autocert.AcceptTOS,
-		HostPolicy: autocert.HostWhitelist(app.config.Core.AutoTLS.Host),
-		Cache:      autocert.DirCache(app.config.Core.AutoTLS.Folder),
-	}
-	return &http.Server{
-		Addr:      ":https",
-		TLSConfig: &tls.Config{GetCertificate: m.GetCertificate},
-		Handler:   Init(w),
-	}
-}
-
-func defaultTLSServer(w *WebServer) *http.Server {
-	return &http.Server{
-		Addr:    "0.0.0.0:" + w.config.Core.TLS.Port,
-		Handler: Init(w),
-	}
-}
-
-func defaultServer(w *WebServer) *http.Server {
-	return &http.Server{
-		Addr:    "0.0.0.0:" + w.config.Core.Port,
-		Handler: Init(w),
-	}
-}
-
-// RunHTTPServer provide run http or https protocol.
-func RunHTTPServer(w *WebServer) (err error) {
-	if !w.config.Core.Enabled {
-		log.Debug("httpd server is disabled.")
-		return nil
-	}
-
-	if w.config.Core.AutoTLS.Enabled {
-		s := autoTLSServer(w)
-		handleSignal(s)
-		log.Infof("1. Start to listening the incoming requests on https address")
-		err = s.ListenAndServeTLS("", "")
-	} else if w.config.Core.TLS.CertPath != "" && w.config.Core.TLS.KeyPath != "" {
-		s := defaultTLSServer(w)
-		handleSignal(s)
-		log.Infof("2. Start to listening the incoming requests on https address: %s", w.config.Core.TLS.Port)
-		err = s.ListenAndServeTLS(w.config.Core.TLS.CertPath, w.config.Core.TLS.KeyPath)
-	} else {
-		s := defaultServer(w)
-		handleSignal(s)
-		log.Infof("3. Start to listening the incoming requests on http address: %s", w.config.Core.Port)
-		err = s.ListenAndServe()
-	}
-
-	return
 }
 
 // handleSignal handles system signal for graceful shutdown.
@@ -156,11 +160,11 @@ func handleSignal(server *http.Server) {
 }
 
 // PingServer
-func PingServer(w *WebServer) (err error) {
-	maxPingConf := w.config.Core.MaxPingCount
+func (app *App)PingServer() (err error) {
+	maxPingConf := app.config.Core.MaxPingCount
 	for i := 0; i < maxPingConf; i++ {
 		// Ping the server by sending a GET request to `/health`.
-		resp, err := http.Get("http://localhost:" + w.config.Core.Port + "/sd/health")
+		resp, err := http.Get("http://localhost:" + app.config.Core.Port + "/sd/health")
 		if err == nil && resp.StatusCode == 200 {
 			return nil
 		}
@@ -171,26 +175,4 @@ func PingServer(w *WebServer) (err error) {
 	}
 	err = errors.New("Cannot connect to the router.")
 	return err
-}
-
-// Redirect 重定向
-func Redirect(w http.ResponseWriter, req *http.Request) {
-	var serverHost string = ""
-	serverHost = strings.TrimPrefix(serverHost, "http://")
-	serverHost = strings.TrimPrefix(serverHost, "https://")
-	req.URL.Scheme = "https"
-	req.URL.Host = serverHost
-
-	w.Header().Set("Strict-Transport-Security", "max-age=31536000")
-
-	http.Redirect(w, req, req.URL.String(), http.StatusMovedPermanently)
-}
-
-// CacheDir 缓存
-func CacheDir() string {
-	const base = "golang-autocert"
-	if xdg := os.Getenv("XDG_CACHE_HOME"); xdg != "" {
-		return filepath.Join(xdg, base)
-	}
-	return filepath.Join(os.Getenv("HOME"), ".cache", base)
 }

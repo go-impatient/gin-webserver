@@ -8,18 +8,62 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/moocss/go-webserver/src/log"
 	"github.com/spf13/viper"
-	"github.com/moocss/go-webserver/src/server"
-	"github.com/moocss/go-webserver/src/util"
 )
 
-var defaultConfig = []byte(``)
+var defaultConfig = []byte(`
+core:
+  enabled: true                   # enabale httpd server
+  mode: "debug"                   # 开发模式, debug, release, test
+  name: "apiserver"               # API Server的名字
+  host: ""                        # ip address to bind (default: any)
+  port: "9090"                    # HTTP 绑定端口.
+  max_ping_count: 2               # pingServer函数try的次数
+  jwt_secret: "Rtg8BPKNEf2mB4mgvKONGPZZQSaJWNLijxR42qRgq0iBb5"
+  tls:
+    port: "9098"
+    cert_path: ""                 # src/config/server.crt
+    key_path: ""                  # src/config/server.key
+  auto_tls:
+    enabled: false                # Automatically install TLS certificates from Let's Encrypt.
+    folder: ".cache"              # folder for storing TLS certificates
+    host: ""                      # which domains the Let's Encrypt will attempt
+
+log:
+    console:
+      color: true
+      prefix: "[webserver]"
+      level: "debug"
+    zap:
+      path: "webserver-api.log"
+      level: "debug"
+
+db:
+  db_name: "db_apiserver"
+  host: "127.0.0.1"
+  port: "3306"
+  username: "root"
+  password: "123456"
+  charset: ""
+  unix: ""
+  table_prefix: ""
+  max_idle_conns: ""
+  max_open_conns: ""
+  conn_max_lift_time: ""
+
+mail:
+  enabled: true                    # 是否开启邮箱发送功能
+  smtp_host: "smtp.exmail.qq.com"  # 邮件smtp地址
+  smtp_port: 465
+  smtp_username: "moocss@163.com"
+  smtp_password: ""
+`)
 
 type (
 	Config struct {
-		Core *ConfigCore `yaml:"core"`
-		Log  *ConfigLog  `yaml:"log"`
-		Db   *ConfigDb   `yaml:"db"`
-		Mail *ConfigMail `yaml:"mail"`
+		Core 	ConfigCore `yaml:"core"`
+		Log  	ConfigLog  `yaml:"log"`
+		Db   	ConfigDb   `yaml:"db"`
+		Mail 	ConfigMail `yaml:"mail"`
 	}
 	// ConfigCore is sub section of config.
 	ConfigCore struct {
@@ -28,13 +72,10 @@ type (
 		Name         string         `yaml:"name"`
 		Host         string         `yaml:"host"`
 		Port         string         `yaml:"port"`
-		ReadTimeout  int            `yaml:"read_timeout"`
-		WriteTimeout int            `yaml:"write_timeout"`
-		IdleTimeout  int            `yaml:"idle_timeout"`
 		MaxPingCount int            `yaml:"max_ping_count"`
 		JwtSecret    string         `yaml:"jwt_secret"`
-		TLS          *ConfigTLS     `yaml:"tls"`
-		AutoTLS      *ConfigAutoTLS `yaml:"auto_tls"`
+		TLS          ConfigTLS     	`yaml:"tls"`
+		AutoTLS      ConfigAutoTLS 	`yaml:"auto_tls"`
 	}
 
 	// ConfigTLS support tls
@@ -44,26 +85,29 @@ type (
 		KeyPath  string `yaml:"key_path"`
 	}
 
-	// SectionAutoTLS support Let's Encrypt setting.
+	// ConfigAutoTLS support Let's Encrypt setting.
 	ConfigAutoTLS struct {
 		Enabled bool   `yaml:"enabled"`
 		Folder  string `yaml:"folder"`
 		Host    string `yaml:"host"`
 	}
 
-	// SectionLog is sub section of config.
+	// ConfigLog is sub section of config.
 	ConfigLog struct {
-		Writers        string `yaml:"writers"`
-		LoggerLevel    string `yaml:"logger_level"`
-		LoggerFile     string `yaml:"logger_file"`
-		LogFormatText  bool   `yaml:"log_format_text"`
-		RollingPolicy  string `yaml:"rolling_policy"`
-		LogRotateDate  int    `yaml:"log_rotate_date"`
-		LogRotateSize  int    `yaml:"log_rotate_size"`
-		LogBackupCount int    `yaml:"log_backup_count"`
+		Console  ConfigLogConsole 	`yaml:"console"`
+		Zap			 ConfigLogZap 			`yaml:"zap"`
+	}
+	ConfigLogConsole struct {
+		Color 	bool   `yaml:"color"`
+		Prefix 	string `yaml:"prefix"`
+		Level 	string `yaml:"level"`
+	}
+	ConfigLogZap struct {
+		Path  	string `yaml:"path"`
+		Level 	string `yaml:"level"`
 	}
 
-	// SectionDb is sub section of config.
+	// ConfigDb is sub section of config.
 	ConfigDb struct {
 		Unix            string `yaml:"unix"`
 		Host            string `yaml:"host"`
@@ -78,32 +122,19 @@ type (
 		ConnMaxLifeTime int    `yaml:"conn_max_lift_time"`
 	}
 
-	// SectionMail is sub section of config
+	// ConfigMail is sub section of config
 	ConfigMail struct {
-		Enable   int    `yaml:"enable"`
-		Smtp     string `yaml:"smtp"`
-		Port     int    `yaml:"port"`
-		Username string `yaml:"username"`
-		Password string `yaml:"password"`
+		Enable   bool     `yaml:"enable"`
+		Smtp     string   `yaml:"smtp_host"`
+		Port     int  		`yaml:"smtp_port"`
+		Username string   `yaml:"smtp_username"`
+		Password string   `yaml:"smtp_password"`
 	}
 )
 
-func Init(confPath string) error {
-
-	// 初始化配置文件
-	if err := initConfig(confPath); err != nil {
-		return err
-	}
-
-	// 监控配置文件变化并热加载程序
-	watchConfig()
-
-	return nil
-}
-
 // 加载配置文件
-func initConfig(confPath string) error {
-	var conf *Config
+func LoadConfig(confPath string) (Config, error) {
+	var cfg Config
 
 	// 设置配置文件格式为YAML
 	viper.SetConfigType("yaml")
@@ -131,14 +162,14 @@ func initConfig(confPath string) error {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-		return err
+		fmt.Println("解析配置文件失败:", viper.ConfigFileUsed())
+		return cfg, err
 	} else {
 		// load default config
 		err := viper.ReadConfig(bytes.NewBuffer(defaultConfig))
 		if err != nil {
-			log.Fatal("读取默认失败: " + err.Error())
-			return err
+			log.Fatal("读取默认配置失败: " + err.Error())
+			return cfg, err
 		}
 	}
 
@@ -148,17 +179,49 @@ func initConfig(confPath string) error {
 	//	return err
 	//}
 
-	// 监控配置文件变化并热加载程序
-	viper.WatchConfig()
-	viper.OnConfigChange(func(e fsnotify.Event) {
-		log.Infof("Config file changed: %s", e.Name)
-	})
+	// Core
+	cfg.Core.Enabled = viper.GetBool("core.enabled")
+	cfg.Core.Mode = viper.GetString("core.mode")
+	cfg.Core.Name = viper.GetString("core.name")
+	cfg.Core.Host = viper.GetString("core.host")
+	cfg.Core.Port = viper.GetString("core.port")
+	cfg.Core.MaxPingCount = viper.GetInt("core.max_ping_count")
+	cfg.Core.JwtSecret = viper.GetString("core.jwt_secret")
+	cfg.Core.TLS.Port = viper.GetString("core.tls.port")
+	cfg.Core.TLS.CertPath = viper.GetString("core.tls.cert_path")
+	cfg.Core.TLS.KeyPath = viper.GetString("core.tls.key_path")
+	cfg.Core.AutoTLS.Enabled = viper.GetBool("core.auto_tls.enabled")
+	cfg.Core.AutoTLS.Folder = viper.GetString("core.auto_tls.folder")
+	cfg.Core.AutoTLS.Host = viper.GetString("core.auto_tls.host")
 
-	//cfg := &Config{
-	//
-	//}
+	// Log
+	cfg.Log.Console.Color = viper.GetBool("log.console.color")
+	cfg.Log.Console.Prefix = viper.GetString("log.console.prefix")
+	cfg.Log.Console.Level = viper.GetString("log.console.level")
+	cfg.Log.Zap.Path = viper.GetString("log.zap.path")
+	cfg.Log.Zap.Level = viper.GetString("log.zap.level")
 
-	return nil
+	// Db
+	cfg.Db.Unix = viper.GetString("db.unix")
+	cfg.Db.Host = viper.GetString("db.host")
+	cfg.Db.Port = viper.GetString("db.port")
+	cfg.Db.Charset = viper.GetString("db.charset")
+	cfg.Db.DbName = viper.GetString("db.db_name")
+	cfg.Db.Username = viper.GetString("db.username")
+	cfg.Db.Password = viper.GetString("db.password")
+	cfg.Db.TablePrefix = viper.GetString("db.table_prefix")
+	cfg.Db.MaxIdleConns = viper.GetInt("max_idle_conns")
+	cfg.Db.MaxOpenConns = viper.GetInt("max_open_conns")
+	cfg.Db.ConnMaxLifeTime = viper.GetInt("conn_max_lift_time")
+
+	// Mail
+	cfg.Mail.Enable = viper.GetBool("mail.enable")
+	cfg.Mail.Smtp = viper.GetString("mail.smtp_host")
+	cfg.Mail.Port = viper.GetInt("mail.smtp_port")
+	cfg.Mail.Username = viper.GetString("mail.smtp_username")
+	cfg.Mail.Password = viper.GetString("mail.smtp_password")
+
+	return cfg, nil
 }
 
 // 监控配置文件变化并热加载程序

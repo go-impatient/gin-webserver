@@ -10,7 +10,7 @@ import (
 // Test file is missing
 func TestMissingFile(t *testing.T) {
 	filePath := "test"
-	err := Init(filePath)
+	_, err := Init(filePath)
 
 	assert.NotNil(t, err)
 }
@@ -23,11 +23,11 @@ type ConfigTestSuite struct {
 
 func (suite *ConfigTestSuite) SetupTest() {
 	var err error
-	err = Init("")
+	suite.ConfDefault, err = LoadConfig("")
 	if err != nil {
 		panic("failed to load default config.yml")
 	}
-	err = Init("src/config")
+	suite.Conf, err = LoadConfig("src/config.yml")
 	if err != nil {
 		panic("failed to load config.yml from file")
 	}
@@ -43,25 +43,29 @@ func (suite *ConfigTestSuite) TestValidateConfDefault() {
 	assert.Equal(suite.T(), 2, suite.ConfDefault.Core.MaxPingCount)
 	assert.Equal(suite.T(), "Rtg8BPKNEf2mB4mgvKONGPZZQSaJWNLijxR42qRgq0iBb5", suite.ConfDefault.Core.JwtSecret)
 	assert.Equal(suite.T(), "9098", suite.ConfDefault.Core.TLS.Port)
-	assert.Equal(suite.T(), "src/config/server.crt", suite.ConfDefault.Core.TLS.CertPath)
-	assert.Equal(suite.T(), "src/config/server.key", suite.ConfDefault.Core.TLS.KeyPath)
+	assert.Equal(suite.T(), "src/server.crt", suite.ConfDefault.Core.TLS.CertPath)
+	assert.Equal(suite.T(), "src/server.key", suite.ConfDefault.Core.TLS.KeyPath)
 
 	// Log
-	assert.Equal(suite.T(), "file,stdout", suite.ConfDefault.Log.Writers)
-	assert.Equal(suite.T(), "DEBUG", suite.ConfDefault.Log.LoggerLevel)
-	assert.Equal(suite.T(), "log/apiserver.log", suite.ConfDefault.Log.LoggerFile)
-	assert.Equal(suite.T(), false, suite.ConfDefault.Log.LogFormatText)
-	assert.Equal(suite.T(), "size", suite.ConfDefault.Log.RollingPolicy)
-	assert.Equal(suite.T(), 1, suite.ConfDefault.Log.LogRotateDate)
-	assert.Equal(suite.T(), 1, suite.ConfDefault.Log.LogRotateSize)
-	assert.Equal(suite.T(), 7, suite.ConfDefault.Log.LogBackupCount)
+	assert.Equal(suite.T(), true , suite.ConfDefault.Log.Console.Color)
+	assert.Equal(suite.T(), "[webserver]", suite.ConfDefault.Log.Console.Prefix)
+	assert.Equal(suite.T(), "debug", suite.ConfDefault.Log.Console.Level)
+	assert.Equal(suite.T(), "webserver-api.log", suite.ConfDefault.Log.Zap.Path)
+	assert.Equal(suite.T(), "debug", suite.ConfDefault.Log.Zap.Level)
 
 	// Db
-	assert.Equal(suite.T(), "db_apiserver", suite.ConfDefault.Db.Name)
-	assert.Equal(suite.T(), "127.0.0.1:3306", suite.ConfDefault.Db.Addr)
+	assert.Equal(suite.T(), "db_apiserver", suite.ConfDefault.Db.DbName)
+	assert.Equal(suite.T(), "127.0.0.1", suite.ConfDefault.Db.Host)
+	assert.Equal(suite.T(), "3306", suite.ConfDefault.Db.Port)
 	assert.Equal(suite.T(), "root", suite.ConfDefault.Db.Username)
 	assert.Equal(suite.T(), "root", suite.ConfDefault.Db.Password)
 
+	// Mail
+	assert.Equal(suite.T(), true, suite.ConfDefault.Mail.Enable)
+	assert.Equal(suite.T(), "smtp.exmail.qq.com", suite.ConfDefault.Mail.Smtp)
+	assert.Equal(suite.T(), 465, suite.ConfDefault.Mail.Port)
+	assert.Equal(suite.T(), "moocss@163.com", suite.ConfDefault.Mail.Username)
+	assert.Equal(suite.T(), "", suite.ConfDefault.Mail.Password)
 }
 
 func (suite *ConfigTestSuite) TestValidateConf() {

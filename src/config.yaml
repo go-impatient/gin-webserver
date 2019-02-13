@@ -4,9 +4,6 @@ core:
   name: "apiserver"               # API Server的名字
   host: ""                        # ip address to bind (default: any)
   port: "9090"                    # HTTP 绑定端口.
-  read_timeout: 300               # 读超时时间设置, 单位秒
-  write_timeout: 300              # 写超时时间设置, 单位秒
-  idle_timeout: 300               # 空闲连接超时设置, 单位秒
   max_ping_count: 2               # pingServer函数try的次数
   jwt_secret: "Rtg8BPKNEf2mB4mgvKONGPZZQSaJWNLijxR42qRgq0iBb5"
   tls:
@@ -17,6 +14,15 @@ core:
     enabled: false                # Automatically install TLS certificates from Let's Encrypt.
     folder: ".cache"              # folder for storing TLS certificates
     host: ""                      # which domains the Let's Encrypt will attempt
+
+log:
+    console:
+      color: true
+      prefix: "[webserver]"
+      level: "debug"
+    zap:
+      path: "webserver-api.log"
+      level: "debug"
 
 db:
   db_name: "db_apiserver"
@@ -32,8 +38,8 @@ db:
   conn_max_lift_time: ""
 
 mail:
-  enabled: 0                       # 是否开启邮箱发送功能
+  enabled: true                    # 是否开启邮箱发送功能
   smtp_host: "smtp.exmail.qq.com"  # 邮件smtp地址
-  smtp_port: "465"
+  smtp_port: 465
   smtp_username: "moocss@163.com"
   smtp_password: ""
