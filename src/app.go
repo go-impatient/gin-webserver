@@ -1,4 +1,4 @@
-package server
+package src
 
 import (
 	"crypto/tls"
@@ -24,51 +24,51 @@ import (
 	"github.com/spf13/viper"
 )
 
-// WebServer 项目
-type WebServer struct {
+var (
+	A								*App
+	Gorm           	*gorm.DB
+	DB   						*storer.Database
+	Mail            *util.SendMail
+)
+
+// App 项目
+type App struct {
 	config *config.Config
+	serve  *gin.Engine
 	// cache *storer.CacheStore
 	// ...
 }
 
-var (
-	Gorm           	*gorm.DB
-	db   						*storer.Database
-	Mail            *util.SendMail
-)
-
-func NewWebServer(cfg *config.Config) *WebServer {
-	return &WebServer{
+func NewApp(cfg *config.Config) *App {
+	return &App{
 		config: cfg,
+		serve: gin.New(),
 	}
 }
 
 // Init returns a app instance
-func Init(w *WebServer) *gin.Engine {
+func InitRouter(app *App) *gin.Engine {
 	// Set gin mode.
-	gin.SetMode(w.config.Core.Mode)
-
-	// Create the Gin engine.
-	g := gin.New()
+	gin.SetMode(app.config.Core.Mode)
 
 	// Routes
 	router.Load(
 		// Cores
-		g,
+		app.serve,
 		// Middlwares
 		middleware.RequestId(),
 	)
-	return g
+	return app.serve
 }
 
 // Init initializes mail pkg.
-func InitMail(w *WebServer) {
+func InitMail(app *App) {
 	Mail = util.SendMailNew(&util.SendMail{
-		Enable: w.config.Mail.Enable,
-		Smtp: w.config.Mail.Smtp,
-		Port: w.config.Mail.Port,
-		User: w.config.Mail.Username,
-		Pass: w.config.Mail.Password,
+		Enable: app.config.Mail.Enable,
+		Smtp: app.config.Mail.Smtp,
+		Port: app.config.Mail.Port,
+		User: app.config.Mail.Username,
+		Pass: app.config.Mail.Password,
 	})
 }
 
@@ -82,11 +82,11 @@ func InitLog() {
 }
 
 
-func autoTLSServer(w *WebServer) *http.Server {
+func autoTLSServer(app *App) *http.Server {
 	m := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
-		HostPolicy: autocert.HostWhitelist(w.config.Core.AutoTLS.Host),
-		Cache:      autocert.DirCache(w.config.Core.AutoTLS.Folder),
+		HostPolicy: autocert.HostWhitelist(app.config.Core.AutoTLS.Host),
+		Cache:      autocert.DirCache(app.config.Core.AutoTLS.Folder),
 	}
 	return &http.Server{
 		Addr:      ":https",
