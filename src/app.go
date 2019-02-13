@@ -23,8 +23,8 @@ import (
 
 var (
 	A								*App
-	Gorm           	*gorm.DB
-	DB   						*storer.Database
+	Orm           	*gorm.DB
+	DbInstance   		*storer.Database
 	Mail            *util.SendMail
 )
 
@@ -41,6 +41,14 @@ func NewApp(cfg *config.Config) *App {
 		config: cfg,
 		serve: gin.New(),
 	}
+}
+
+func (app *App) InitDB() {
+	DbInstance = storer.NewDatabase(app.config.Db)
+	if err := DbInstance.Open(); err != nil {
+		panic(err)
+	}
+	Orm = DbInstance.Self
 }
 
 // Init initializes mail pkg.
@@ -152,7 +160,7 @@ func handleSignal(server *http.Server) {
 			log.Errorf("server close failed ", err)
 		}
 
-		storer.DB.Close()
+		Orm.Close()
 
 		log.Infof("apiserver exited")
 		os.Exit(0)

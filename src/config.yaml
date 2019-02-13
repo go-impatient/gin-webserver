@@ -30,7 +30,7 @@ db:
   port: "3306"
   username: "root"
   password: "123456"
-  charset: ""
+  charset: "utf8mb4"
   unix: ""
   table_prefix: ""
   max_idle_conns: ""

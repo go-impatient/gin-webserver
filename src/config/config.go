@@ -43,7 +43,7 @@ db:
   port: "3306"
   username: "root"
   password: "123456"
-  charset: ""
+  charset: "utf8mb4"
   unix: ""
   table_prefix: ""
   max_idle_conns: ""
@@ -60,10 +60,10 @@ mail:
 
 type (
 	Config struct {
-		Core 	ConfigCore `yaml:"core"`
-		Log  	ConfigLog  `yaml:"log"`
-		Db   	ConfigDb   `yaml:"db"`
-		Mail 	ConfigMail `yaml:"mail"`
+		Core 	*ConfigCore `yaml:"core"`
+		Log  	*ConfigLog  `yaml:"log"`
+		Db   	*ConfigDb   `yaml:"db"`
+		Mail 	*ConfigMail `yaml:"mail"`
 	}
 	// ConfigCore is sub section of config.
 	ConfigCore struct {

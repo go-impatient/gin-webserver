@@ -1,14 +1,15 @@
-package model
+package user
 
 import (
 	"encoding/json"
 	"time"
 	"sync"
+	"github.com/moocss/go-webserver/src/model"
 )
 
 // User represents a registered user.
 type UserModel struct {
-	BaseModel
+	model.BaseModel
 	Username string `json:"username" gorm:"column:username;not null" binding:"required" validate:"min=1,max=32"`
 	Password string `json:"password" gorm:"column:password;not null" binding:"required" validate:"min=5,max=128"`
 }
@@ -29,7 +30,7 @@ func UserFrom(str string) (*UserModel, error) {
 
 // String returns JSON string with full user info
 func (u *UserModel) String() string {
-	return jsonMarshal(u)
+	return model.JsonMarshal(u)
 }
 
 // Result returns UserResult intance
@@ -52,7 +53,7 @@ type UserResult struct {
 
 // String returns JSON string with desensitized user info
 func (u *UserResult) String() string {
-	return jsonMarshal(u)
+	return model.JsonMarshal(u)
 }
 
 type UserList struct {

@@ -8,7 +8,6 @@ import (
 	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/log"
 	"github.com/moocss/go-webserver/src/pkg/version"
-	"github.com/moocss/go-webserver/src/storer"
 	"github.com/urfave/cli"
 	"golang.org/x/sync/errgroup"
 )
@@ -48,9 +47,6 @@ func start(c *cli.Context) error {
 		g errgroup.Group
 	)
 
-	// 初始化数据
-	storer.DB.Init()
-
 	// 设置默认配置
 	cfg, err := config.Init(c.String("c"));
 	if  err != nil {
@@ -59,6 +55,15 @@ func start(c *cli.Context) error {
 	}
 
 	app := src.NewApp(&cfg)
+
+	// 初始化日志服务
+	app.InitLog()
+
+	// 初始化数据服务
+	app.InitDB()
+
+	// 初始化邮件服务
+	// app.InitMail()
 
 	g.Go(func() error {
 		// 启动服务
