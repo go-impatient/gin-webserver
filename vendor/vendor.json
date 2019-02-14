@@ -9,6 +9,12 @@
 			"revisionTime": "2018-12-12T23:48:31Z"
 		},
 		{
+			"checksumSHA1": "97BsbXOiZ8+Kr+LIuZkQFtSj7H4=",
+			"path": "github.com/coreos/go-semver/semver",
+			"revision": "e214231b295a8ea9479f11b70b35d5acf3556d9b",
+			"revisionTime": "2018-01-08T23:09:05Z"
+		},
+		{
 			"checksumSHA1": "dvabztWVQX8f6oMLRyv4dLH+TGY=",
 			"origin": "github.com/stretchr/testify/vendor/github.com/davecgh/go-spew/spew",
 			"path": "github.com/davecgh/go-spew/spew",
@@ -26,6 +32,12 @@
 			"path": "github.com/fsnotify/fsnotify",
 			"revision": "ccc981bf80385c528a65fbfdd49bf2d8da22aa23",
 			"revisionTime": "2018-08-30T22:02:26Z"
+		},
+		{
+			"checksumSHA1": "XNyrvOw+twqjPJvZjr13wzae4X4=",
+			"path": "github.com/gin-contrib/cors",
+			"revision": "5e7acb10687f94a88d0d8e96297818fff2da8f88",
+			"revisionTime": "2019-01-01T12:32:55Z"
 		},
 		{
 			"checksumSHA1": "QeKwBtN2df+j+4stw3bQJ6yO4EY=",

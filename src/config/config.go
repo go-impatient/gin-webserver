@@ -2,7 +2,6 @@ package config
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
@@ -38,6 +37,7 @@ log:
       level: "debug"
 
 db:
+  dialect: "mysql"
   db_name: "db_apiserver"
   host: "127.0.0.1"
   port: "3306"
@@ -56,14 +56,25 @@ mail:
   smtp_port: 465
   smtp_username: "moocss@163.com"
   smtp_password: ""
+
+cache:
+  type: "none"
+  timeout: 60
+  redis:
+    host: "localhost"
+    port: 6379
+    password: ""
+    db: 0
+    keyprefix: "__:::webserver:"
 `)
 
 type (
 	Config struct {
-		Core 	*ConfigCore `yaml:"core"`
-		Log  	*ConfigLog  `yaml:"log"`
-		Db   	*ConfigDb   `yaml:"db"`
-		Mail 	*ConfigMail `yaml:"mail"`
+		Core *ConfigCore `yaml:"core"`
+		Log  *ConfigLog  `yaml:"log"`
+		Db   *ConfigDb   `yaml:"db"`
+		Mail *ConfigMail `yaml:"mail"`
+		Cache *ConfigCache `yaml:"cache"`
 	}
 	// ConfigCore is sub section of config.
 	ConfigCore struct {
@@ -74,8 +85,8 @@ type (
 		Port         string         `yaml:"port"`
 		MaxPingCount int            `yaml:"max_ping_count"`
 		JwtSecret    string         `yaml:"jwt_secret"`
-		TLS          ConfigTLS     	`yaml:"tls"`
-		AutoTLS      ConfigAutoTLS 	`yaml:"auto_tls"`
+		TLS          *ConfigTLS     `yaml:"tls"`
+		AutoTLS      *ConfigAutoTLS `yaml:"auto_tls"`
 	}
 
 	// ConfigTLS support tls
@@ -94,17 +105,17 @@ type (
 
 	// ConfigLog is sub section of config.
 	ConfigLog struct {
-		Console  ConfigLogConsole 	`yaml:"console"`
-		Zap			 ConfigLogZap 			`yaml:"zap"`
+		Console *ConfigLogConsole `yaml:"console"`
+		Zap     *ConfigLogZap     `yaml:"zap"`
 	}
 	ConfigLogConsole struct {
-		Color 	bool   `yaml:"color"`
-		Prefix 	string `yaml:"prefix"`
-		Level 	string `yaml:"level"`
+		Color  bool   `yaml:"color"`
+		Prefix string `yaml:"prefix"`
+		Level  string `yaml:"level"`
 	}
 	ConfigLogZap struct {
-		Path  	string `yaml:"path"`
-		Level 	string `yaml:"level"`
+		Path  string `yaml:"path"`
+		Level string `yaml:"level"`
 	}
 
 	// ConfigDb is sub section of config.
@@ -113,6 +124,7 @@ type (
 		Host            string `yaml:"host"`
 		Port            string `yaml:"port"`
 		Charset         string `yaml:"charset"`
+		Dialect         string `yaml:"dialect"`
 		DbName          string `yaml:"db_name"`
 		Username        string `yaml:"username"`
 		Password        string `yaml:"password"`
@@ -124,18 +136,44 @@ type (
 
 	// ConfigMail is sub section of config
 	ConfigMail struct {
-		Enable   bool     `yaml:"enable"`
-		Smtp     string   `yaml:"smtp_host"`
-		Port     int  		`yaml:"smtp_port"`
-		Username string   `yaml:"smtp_username"`
-		Password string   `yaml:"smtp_password"`
+		Enable   bool   `yaml:"enable"`
+		Smtp     string `yaml:"smtp_host"`
+		Port     int    `yaml:"smtp_port"`
+		Username string `yaml:"smtp_username"`
+		Password string `yaml:"smtp_password"`
+	}
+
+	ConfigCache struct {
+		Type    string            `yaml:"type"`
+		Timeout int32            `yaml:"timeout"`
+		Redis   *ConfigCacheRedis `yaml:"redis"`
+	}
+
+	ConfigCacheRedis struct {
+		Host      string 	`yaml:"host"`
+		Port      int 		`yaml:"port"`
+		Password  string 	`yaml:"password"`
+		DB        int    	`yaml:"db"`
+		KeyPrefix string 	`yaml:"keyprefix"`
 	}
 )
 
-// 加载配置文件
-func LoadConfig(confPath string) (Config, error) {
-	var cfg Config
+// Init initializes config pkg.
+func Init(confPath string) (*Config, error) {
+	// 初始化配置文件
+	cfg, err := LoadConfig(confPath)
+	if err != nil {
+		return nil, err
+	}
 
+	// 监控配置文件变化并热加载程序
+	watchConfig()
+
+	return cfg, nil
+}
+
+// 加载配置文件
+func LoadConfig(confPath string) (*Config, error) {
 	// 设置配置文件格式为YAML
 	viper.SetConfigType("yaml")
 
@@ -162,64 +200,80 @@ func LoadConfig(confPath string) (Config, error) {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println("解析配置文件失败:", viper.ConfigFileUsed())
-		return cfg, err
+		log.Errorf("解析配置文件失败: %s", viper.ConfigFileUsed())
+		return nil, err
 	} else {
 		// load default config
 		err := viper.ReadConfig(bytes.NewBuffer(defaultConfig))
 		if err != nil {
-			log.Fatal("读取默认配置失败: " + err.Error())
-			return cfg, err
+			log.Errorf("读取默认配置失败: %s", err.Error())
+			return nil, err
 		}
 	}
 
-	// 将新配置解组到我们的运行时配置结构中。
-	//if err := viper.Unmarshal(Bear.C); err != nil {
-	//	log.Fatal("解密配置失败: " + err.Error())
-	//	return err
-	//}
-
-	// Core
-	cfg.Core.Enabled = viper.GetBool("core.enabled")
-	cfg.Core.Mode = viper.GetString("core.mode")
-	cfg.Core.Name = viper.GetString("core.name")
-	cfg.Core.Host = viper.GetString("core.host")
-	cfg.Core.Port = viper.GetString("core.port")
-	cfg.Core.MaxPingCount = viper.GetInt("core.max_ping_count")
-	cfg.Core.JwtSecret = viper.GetString("core.jwt_secret")
-	cfg.Core.TLS.Port = viper.GetString("core.tls.port")
-	cfg.Core.TLS.CertPath = viper.GetString("core.tls.cert_path")
-	cfg.Core.TLS.KeyPath = viper.GetString("core.tls.key_path")
-	cfg.Core.AutoTLS.Enabled = viper.GetBool("core.auto_tls.enabled")
-	cfg.Core.AutoTLS.Folder = viper.GetString("core.auto_tls.folder")
-	cfg.Core.AutoTLS.Host = viper.GetString("core.auto_tls.host")
-
-	// Log
-	cfg.Log.Console.Color = viper.GetBool("log.console.color")
-	cfg.Log.Console.Prefix = viper.GetString("log.console.prefix")
-	cfg.Log.Console.Level = viper.GetString("log.console.level")
-	cfg.Log.Zap.Path = viper.GetString("log.zap.path")
-	cfg.Log.Zap.Level = viper.GetString("log.zap.level")
-
-	// Db
-	cfg.Db.Unix = viper.GetString("db.unix")
-	cfg.Db.Host = viper.GetString("db.host")
-	cfg.Db.Port = viper.GetString("db.port")
-	cfg.Db.Charset = viper.GetString("db.charset")
-	cfg.Db.DbName = viper.GetString("db.db_name")
-	cfg.Db.Username = viper.GetString("db.username")
-	cfg.Db.Password = viper.GetString("db.password")
-	cfg.Db.TablePrefix = viper.GetString("db.table_prefix")
-	cfg.Db.MaxIdleConns = viper.GetInt("max_idle_conns")
-	cfg.Db.MaxOpenConns = viper.GetInt("max_open_conns")
-	cfg.Db.ConnMaxLifeTime = viper.GetInt("conn_max_lift_time")
-
-	// Mail
-	cfg.Mail.Enable = viper.GetBool("mail.enable")
-	cfg.Mail.Smtp = viper.GetString("mail.smtp_host")
-	cfg.Mail.Port = viper.GetInt("mail.smtp_port")
-	cfg.Mail.Username = viper.GetString("mail.smtp_username")
-	cfg.Mail.Password = viper.GetString("mail.smtp_password")
+	cfg := &Config{
+		Core: &ConfigCore{
+			Enabled:      viper.GetBool("core.enabled"),
+			Mode:         viper.GetString("core.mode"),
+			Name:         viper.GetString("core.name"),
+			Host:         viper.GetString("core.host"),
+			Port:         viper.GetString("core.port"),
+			MaxPingCount: viper.GetInt("core.max_ping_count"),
+			JwtSecret:    viper.GetString("core.jwt_secret"),
+			TLS: &ConfigTLS{
+				Port:     viper.GetString("core.tls.port"),
+				CertPath: viper.GetString("core.tls.cert_path"),
+				KeyPath:  viper.GetString("core.tls.key_path"),
+			},
+			AutoTLS: &ConfigAutoTLS{
+				Enabled: viper.GetBool("core.auto_tls.enabled"),
+				Folder:  viper.GetString("core.auto_tls.folder"),
+				Host:    viper.GetString("core.auto_tls.host"),
+			},
+		},
+		Log: &ConfigLog{
+			Console: &ConfigLogConsole{
+				Color:  viper.GetBool("log.console.color"),
+				Prefix: viper.GetString("log.console.prefix"),
+				Level:  viper.GetString("log.console.level"),
+			},
+			Zap: &ConfigLogZap{
+				Path:  viper.GetString("log.zap.path"),
+				Level: viper.GetString("log.zap.level"),
+			},
+		},
+		Db: &ConfigDb{
+			Unix:            viper.GetString("db.unix"),
+			Host:            viper.GetString("db.host"),
+			Port:            viper.GetString("db.port"),
+			Charset:         viper.GetString("db.charset"),
+			DbName:          viper.GetString("db.db_name"),
+			Username:        viper.GetString("db.username"),
+			Password:        viper.GetString("db.password"),
+			TablePrefix:     viper.GetString("db.table_prefix"),
+			MaxIdleConns:    viper.GetInt("db.max_idle_conns"),
+			MaxOpenConns:    viper.GetInt("db.max_open_conns"),
+			ConnMaxLifeTime: viper.GetInt("db.conn_max_lift_time"),
+		},
+		Mail: &ConfigMail{
+			Enable:   viper.GetBool("mail.enable"),
+			Smtp:     viper.GetString("mail.smtp_host"),
+			Port:     viper.GetInt("mail.smtp_port"),
+			Username: viper.GetString("mail.smtp_username"),
+			Password: viper.GetString("mail.smtp_password"),
+		},
+		Cache: &ConfigCache{
+			Type: viper.GetString("cache.type"),
+			Timeout: viper.GetInt32("cache.timeout"),
+			Redis: &ConfigCacheRedis{
+				Host: viper.GetString("cache.redis.host"),
+				Port: viper.GetInt("cache.redis.host"),
+				Password: viper.GetString("cache.redis.password"),
+				DB: viper.GetInt("cache.redis.db"),
+				KeyPrefix: viper.GetString("cache.redis.keyprefix"),
+			},
+		},
+	}
 
 	return cfg, nil
 }

@@ -1,10 +1,9 @@
-package header
+package middleware
 
 import (
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
-	"github.com/moocss/go-webserver/src/pkg/version"
-	"github.com/gin-gonic/gin"
 )
 
 // NoCache is a middleware function that appends headers
@@ -46,12 +45,3 @@ func Secure(c *gin.Context) {
 	// Also consider adding Content-Security-Policy headers
 	// c.Header("Content-Security-Policy", "script-src 'self' https://cdnjs.cloudflare.com")
 }
-
-// Version is a middleware function that appends the Bear
-// version information to the HTTP response. This is intended
-// for debugging and troubleshooting.
-func Version(c *gin.Context) {
-	c.Header("X-BEAR-VERSION", version.Info.String())
-	c.Next()
-}
-

@@ -25,6 +25,7 @@ log:
       level: "debug"
 
 db:
+  dialect: "mysql"
   db_name: "db_apiserver"
   host: "127.0.0.1"
   port: "3306"
@@ -43,3 +44,13 @@ mail:
   smtp_port: 465
   smtp_username: "moocss@163.com"
   smtp_password: ""
+
+cache:
+  type: "none"
+  timeout: 60
+  redis:
+    host: "localhost"
+    port: 6379
+    password: ""
+    db: 0
+    keyprefix: "__:::webserver:"

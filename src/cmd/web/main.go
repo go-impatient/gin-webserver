@@ -54,7 +54,7 @@ func start(c *cli.Context) error {
 		os.Exit(-1)
 	}
 
-	app := src.NewApp(&cfg)
+	app := src.NewApp(cfg)
 
 	// 初始化日志服务
 	app.InitLog()

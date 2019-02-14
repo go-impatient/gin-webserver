@@ -4,7 +4,8 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	_ "github.com/jinzhu/gorm/dialects/mysql"    // enable the mysql dialect
+	_ "github.com/jinzhu/gorm/dialects/postgres" // enable the postgres dialect
 	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/log"
 	"time"
@@ -21,30 +22,31 @@ func NewDatabase(cfg *config.ConfigDb) *Database {
 	}
 }
 
-func (db *Database) Open() *gorm.DB {
-	g, err := gorm.Open("mysql", parseConnConfig(db))
+func (d *Database) Open() (*Database, error) {
+	db, err := gorm.Open(d.cfg.Dialect, d.parseConnConfig())
 	if err != nil {
 		log.Errorf("Database connection failed.", err)
-	} else {
-		log.Infof("Database connection succeed.")
+		return nil, err
 	}
 
 	// set for db connection
-	g.LogMode(true)
-	g.DB().SetMaxOpenConns(db.cfg.MaxOpenConns) // 用于设置最大打开的连接数，默认值为0表示不限制.设置最大的连接数，可以避免并发太高导致连接mysql出现too many connections的错误。
-	g.DB().SetMaxIdleConns(db.cfg.MaxIdleConns) // 用于设置闲置的连接数.设置闲置的连接数则当开启的一个连接使用完成后可以放在池里等候下一次使用。
-	g.DB().SetConnMaxLifetime(time.Second * time.Duration(db.cfg.ConnMaxLifeTime))
+	db.LogMode(true)
+	db.DB().SetMaxOpenConns(d.cfg.MaxOpenConns) // 用于设置最大打开的连接数，默认值为0表示不限制.设置最大的连接数，可以避免并发太高导致连接mysql出现too many connections的错误。
+	db.DB().SetMaxIdleConns(d.cfg.MaxIdleConns) // 用于设置闲置的连接数.设置闲置的连接数则当开启的一个连接使用完成后可以放在池里等候下一次使用。
+	db.DB().SetConnMaxLifetime(time.Second * time.Duration(d.cfg.ConnMaxLifeTime))
 
-	db.Self = g
-
-	return g
+	return &Database{Self: db}, nil
 }
 
-func (db *Database) Close() {
-	err := db.Self.Close()
+func (d *Database) Close() {
+	err := d.Self.Close()
 	if err != nil {
 		log.Error("Disconnect from database failed: ", err)
 	}
+}
+
+func (d *Database) GetTablePrefix() string {
+	return d.cfg.TablePrefix
 }
 
 func realDSN(dbname, username, password, addr, charset string) string {
@@ -52,17 +54,13 @@ func realDSN(dbname, username, password, addr, charset string) string {
 	return conf
 }
 
-func parseConnConfig(db *Database) string {
+func (d *Database) parseConnConfig() string {
 	var connHost string
-	if db.cfg.Unix != "" {
-		connHost = fmt.Sprintf("unix(%s)", db.cfg.Unix)
+	if d.cfg.Unix != "" {
+		connHost = fmt.Sprintf("unix(%s)", d.cfg.Unix)
 	} else {
-		connHost = fmt.Sprintf("tcp(%s:%s)", db.cfg.Host, db.cfg.Port)
+		connHost = fmt.Sprintf("tcp(%s:%s)", d.cfg.Host, d.cfg.Port)
 	}
-	s := realDSN(db.cfg.Username, db.cfg.Password, connHost, db.cfg.DbName, db.cfg.Charset);
+	s := realDSN(d.cfg.Username, d.cfg.Password, connHost, d.cfg.DbName, d.cfg.Charset);
 	return s
-}
-
-func (db *Database) GetTablePrefix() string {
-	return db.cfg.TablePrefix
 }

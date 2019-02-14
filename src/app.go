@@ -45,10 +45,14 @@ func NewApp(cfg *config.Config) *App {
 
 func (app *App) InitDB() {
 	DbInstance = storer.NewDatabase(app.config.Db)
-	if err := DbInstance.Open(); err != nil {
+	db, err := DbInstance.Open()
+	if err != nil {
 		panic(err)
 	}
+
 	Orm = DbInstance.Self
+
+	defer db.Close()
 }
 
 // Init initializes mail pkg.
@@ -89,7 +93,7 @@ func (app *App)RunHTTPServer() (err error) {
 	if app.config.Core.AutoTLS.Enabled {
 		s := autoTLSServer(app)
 		handleSignal(s)
-		log.Infof("1. Start to listening the incoming requests on https address")
+		log.Info("1. Start to listening the incoming requests on https address")
 		err = s.ListenAndServeTLS("", "")
 	} else if app.config.Core.TLS.CertPath != "" && app.config.Core.TLS.KeyPath != "" {
 		s := defaultTLSServer(app)
@@ -157,12 +161,10 @@ func handleSignal(server *http.Server) {
 		s := <-c
 		log.Infof("got signal [%s], exiting apiserver now", s)
 		if err := server.Close(); nil != err {
-			log.Errorf("server close failed ", err)
+			log.Error("server close failed ", err)
 		}
 
-		Orm.Close()
-
-		log.Infof("apiserver exited")
+		log.Info("apiserver exited")
 		os.Exit(0)
 	}()
 }
