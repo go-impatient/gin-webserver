@@ -19,6 +19,8 @@ import (
 	"github.com/moocss/go-webserver/src/util"
 	"github.com/sevennt/wzap"
 	"golang.org/x/crypto/acme/autocert"
+	"strings"
+	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -85,56 +87,101 @@ func (app *App)InitLog() {
 
 // RunHTTPServer provide run http or https protocol.
 func (app *App)RunHTTPServer() (err error) {
+
+
 	if !app.config.Core.Enabled {
 		log.Debug("httpd server is disabled.")
 		return nil
 	}
 
 	if app.config.Core.AutoTLS.Enabled {
-		s := autoTLSServer(app)
-		handleSignal(s)
-		log.Info("1. Start to listening the incoming requests on https address")
-		err = s.ListenAndServeTLS("", "")
+		return autoTLSServer(app)
 	} else if app.config.Core.TLS.CertPath != "" && app.config.Core.TLS.KeyPath != "" {
-		s := defaultTLSServer(app)
-		handleSignal(s)
-		log.Infof("2. Start to listening the incoming requests on https address: %s", app.config.Core.TLS.Port)
-		err = s.ListenAndServeTLS(app.config.Core.TLS.CertPath, app.config.Core.TLS.KeyPath)
+		return defaultTLSServer(app)
 	} else {
-		s := defaultServer(app)
-		handleSignal(s)
-		log.Infof("3. Start to listening the incoming requests on http address: %s", app.config.Core.Port)
-		err = s.ListenAndServe()
+		return defaultServer(app)
 	}
-
-	return
 }
 
-func autoTLSServer(app *App) *http.Server {
-	m := autocert.Manager{
+func autoTLSServer(app *App) error {
+	var g errgroup.Group
+
+	dir := util.CacheDir()
+	os.MkdirAll(dir, 0700)
+
+	manager := &autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist(app.config.Core.AutoTLS.Host),
-		Cache:      autocert.DirCache(app.config.Core.AutoTLS.Folder),
+		// Cache:      autocert.DirCache(app.config.Core.AutoTLS.Folder),
+		Cache:      autocert.DirCache(dir),
 	}
-	return &http.Server{
-		Addr:      ":https",
-		TLSConfig: &tls.Config{GetCertificate: m.GetCertificate},
-		Handler:   serve(app),
-	}
+
+	g.Go(func() error {
+		return http.ListenAndServe(":http", manager.HTTPHandler(http.HandlerFunc(redirect)))
+	})
+
+	g.Go(func() error {
+		serve := &http.Server{
+			Addr:      ":https",
+			TLSConfig: &tls.Config{
+				GetCertificate: manager.GetCertificate,
+				NextProtos:     []string{"http/1.1"}, // disable h2 because Safari :(
+		  },
+			Handler:   serve(app),
+		}
+		handleSignal(serve)
+		log.Info("Start to listening the incoming requests on https address")
+		return serve.ListenAndServeTLS("", "")
+	})
+
+	return g.Wait()
 }
 
-func defaultTLSServer(app *App) *http.Server {
-	return &http.Server{
-		Addr:    "0.0.0.0:" + app.config.Core.TLS.Port,
-		Handler: serve(app),
-	}
+func defaultTLSServer(app *App) error {
+	var g errgroup.Group
+	g.Go(func() error {
+		return http.ListenAndServe(":http", http.HandlerFunc(redirect))
+	})
+	g.Go(func() error {
+		serve := &http.Server{
+			Addr:    ":https",
+			Handler: serve(app),
+			TLSConfig: &tls.Config{
+				NextProtos: []string{"http/1.1"}, // disable h2 because Safari :(
+			},
+		}
+		handleSignal(serve)
+		log.Infof("Start to listening the incoming requests on https address: %s", app.config.Core.TLS.Port)
+		return serve.ListenAndServeTLS(
+			app.config.Core.TLS.CertPath,
+			app.config.Core.TLS.KeyPath,
+    )
+	})
+	return g.Wait()
 }
 
-func defaultServer(app *App) *http.Server {
-	return &http.Server{
+func defaultServer(app *App) error {
+	serve := &http.Server{
 		Addr:    "0.0.0.0:" + app.config.Core.Port,
 		Handler: serve(app),
 	}
+
+	handleSignal(serve)
+	log.Infof("Start to listening the incoming requests on http address: %s", app.config.Core.Port)
+	return serve.ListenAndServe()
+}
+
+// redirect ...
+func redirect(w http.ResponseWriter, req *http.Request) {
+	var serverHost string = A.config.Core.Host
+	serverHost = strings.TrimPrefix(serverHost, "http://")
+	serverHost = strings.TrimPrefix(serverHost, "https://")
+	req.URL.Scheme = "https"
+	req.URL.Host = serverHost
+
+	w.Header().Set("Strict-Transport-Security", "max-age=31536000")
+
+	http.Redirect(w, req, req.URL.String(), http.StatusMovedPermanently)
 }
 
 // serve returns a app instance

@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"strings"
 
-	"github.com/fsnotify/fsnotify"
 	"github.com/moocss/go-webserver/src/log"
+	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 )
 
@@ -70,10 +70,10 @@ cache:
 
 type (
 	Config struct {
-		Core *ConfigCore `yaml:"core"`
-		Log  *ConfigLog  `yaml:"log"`
-		Db   *ConfigDb   `yaml:"db"`
-		Mail *ConfigMail `yaml:"mail"`
+		Core  *ConfigCore  `yaml:"core"`
+		Log   *ConfigLog   `yaml:"log"`
+		Db    *ConfigDb    `yaml:"db"`
+		Mail  *ConfigMail  `yaml:"mail"`
 		Cache *ConfigCache `yaml:"cache"`
 	}
 	// ConfigCore is sub section of config.
@@ -145,16 +145,16 @@ type (
 
 	ConfigCache struct {
 		Type    string            `yaml:"type"`
-		Timeout int32            `yaml:"timeout"`
+		Timeout int32             `yaml:"timeout"`
 		Redis   *ConfigCacheRedis `yaml:"redis"`
 	}
 
 	ConfigCacheRedis struct {
-		Host      string 	`yaml:"host"`
-		Port      int 		`yaml:"port"`
-		Password  string 	`yaml:"password"`
-		DB        int    	`yaml:"db"`
-		KeyPrefix string 	`yaml:"keyprefix"`
+		Host      string `yaml:"host"`
+		Port      int    `yaml:"port"`
+		Password  string `yaml:"password"`
+		DB        int    `yaml:"db"`
+		KeyPrefix string `yaml:"keyprefix"`
 	}
 )
 
@@ -263,13 +263,13 @@ func LoadConfig(confPath string) (*Config, error) {
 			Password: viper.GetString("mail.smtp_password"),
 		},
 		Cache: &ConfigCache{
-			Type: viper.GetString("cache.type"),
+			Type:    viper.GetString("cache.type"),
 			Timeout: viper.GetInt32("cache.timeout"),
 			Redis: &ConfigCacheRedis{
-				Host: viper.GetString("cache.redis.host"),
-				Port: viper.GetInt("cache.redis.host"),
-				Password: viper.GetString("cache.redis.password"),
-				DB: viper.GetInt("cache.redis.db"),
+				Host:      viper.GetString("cache.redis.host"),
+				Port:      viper.GetInt("cache.redis.host"),
+				Password:  viper.GetString("cache.redis.password"),
+				DB:        viper.GetInt("cache.redis.db"),
 				KeyPrefix: viper.GetString("cache.redis.keyprefix"),
 			},
 		},
