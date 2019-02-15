@@ -1,4 +1,4 @@
-package model
+package schema
 
 // The Error contains error relevant information.
 type Error struct {

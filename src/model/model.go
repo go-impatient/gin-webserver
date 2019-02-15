@@ -2,25 +2,12 @@ package model
 
 import (
 	"fmt"
-	"time"
 	"strings"
-	"encoding/json"
 	"github.com/jinzhu/gorm"
 	"github.com/moocss/go-webserver/src"
 	"github.com/moocss/go-webserver/src/log"
 
 )
-
-var Models = []interface{}{
-	&User{},
-}
-
-type Model struct {
-	ID        uint64     `gorm:"primary_key;AUTO_INCREMENT;column:id" json:"id"`
-	CreatedAt time.Time  `gorm:"column:createdAt" json:"createdAt"`
-	UpdatedAt time.Time  `gorm:"column:updatedAt" json:"updatedAt"`
-	DeletedAt *time.Time `gorm:"column:deletedAt" sql:"index" json:"deletedAt"`
-}
 
 type WhereParam struct {
 	Field   string
@@ -166,11 +153,4 @@ func setTableName(rawName string) string {
 		src.DbInstance.GetTablePrefix(),
 		rawName,
 	}, "")
-}
-
-func JsonMarshal(v interface{}) (str string) {
-	if res, err := json.Marshal(v); err == nil {
-		str = string(res)
-	}
-	return
 }

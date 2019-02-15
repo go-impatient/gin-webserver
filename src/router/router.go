@@ -9,7 +9,7 @@ import (
 	// userHandler "github.com/moocss/go-webserver/src/handler/api/user"
 	"github.com/moocss/go-webserver/src/pkg/version"
 	"github.com/moocss/go-webserver/src/router/middleware"
-	errorModel "github.com/moocss/go-webserver/src/model/error"
+	errorModel "github.com/moocss/go-webserver/src/schema"
 )
 
 func rootHandler(c *gin.Context) {

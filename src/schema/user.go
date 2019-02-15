@@ -1,14 +1,13 @@
-package user
+package schema
 
 import (
 	"encoding/json"
 	"time"
-	base "github.com/moocss/go-webserver/src/schema"
 )
 
 // 创建一个User数据模型
 type User struct {
-	base.BaseModel
+	BaseModel
 
 	Username string `gorm:"type:varchar(100);column:username;not null" json:"username"`
 	Password string `gorm:"type:varchar(50);column:password;not null" json:"password"`
@@ -16,8 +15,7 @@ type User struct {
 }
 
 // TableName, 获取User表名称
-func
-TableName() string {
+func UserTableName() string {
 	return "user"
 }
 
@@ -32,7 +30,7 @@ func UserFrom(str string) (*User, error) {
 
 // String, 返回一个为JSON 字符串的用户信息
 func (u *User) String() string {
-	return base.jsonMarshal(u)
+	return jsonMarshal(u)
 }
 
 // Result, 返回一个 UserResult 实例
