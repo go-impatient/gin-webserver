@@ -54,6 +54,16 @@ func start(c *cli.Context) error {
 		os.Exit(-1)
 	}
 
+	if c.Bool("debug") {
+		cfg.Log.Console.Level = "debug"
+		cfg.Log.Zap.Level = "debug"
+		cfg.Core.Mode = "dev"
+	} else {
+		cfg.Log.Console.Level = "warn"
+		cfg.Log.Zap.Level = "warn"
+		cfg.Core.Mode = "prod"
+	}
+
 	app := src.NewApp(cfg)
 
 	// 初始化日志服务

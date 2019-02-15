@@ -6,21 +6,22 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"github.com/sevennt/wzap"
+	"golang.org/x/crypto/acme/autocert"
+	"golang.org/x/sync/errgroup"
+
 	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/log"
 	"github.com/moocss/go-webserver/src/router"
 	"github.com/moocss/go-webserver/src/router/middleware"
 	"github.com/moocss/go-webserver/src/storer"
 	"github.com/moocss/go-webserver/src/util"
-	"github.com/sevennt/wzap"
-	"golang.org/x/crypto/acme/autocert"
-	"strings"
-	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -51,6 +52,9 @@ func (app *App) InitDB() {
 	if err != nil {
 		panic(err)
 	}
+
+	// auto migration
+	// db.Migrate()
 
 	Orm = DbInstance.Self
 
@@ -87,8 +91,6 @@ func (app *App)InitLog() {
 
 // RunHTTPServer provide run http or https protocol.
 func (app *App)RunHTTPServer() (err error) {
-
-
 	if !app.config.Core.Enabled {
 		log.Debug("httpd server is disabled.")
 		return nil
@@ -107,7 +109,7 @@ func autoTLSServer(app *App) error {
 	var g errgroup.Group
 
 	dir := util.CacheDir()
-	os.MkdirAll(dir, 0700)
+	_ = os.MkdirAll(dir, 0700)
 
 	manager := &autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
@@ -187,7 +189,7 @@ func redirect(w http.ResponseWriter, req *http.Request) {
 // serve returns a app instance
 func serve(app *App) *gin.Engine {
 	// Set gin mode.
-	gin.SetMode(app.config.Core.Mode)
+	setRuntimeMode(app.config.Core.Mode)
 
 	// Routes
 	router.Load(
@@ -197,6 +199,19 @@ func serve(app *App) *gin.Engine {
 		middleware.RequestId(),
 	)
 	return app.serve
+}
+
+func setRuntimeMode(mode string)  {
+	switch mode {
+	case "dev":
+		gin.SetMode(gin.DebugMode)
+	case "prod":
+		gin.SetMode(gin.ReleaseMode)
+	case "test":
+		gin.SetMode(gin.TestMode)
+	default:
+		panic("unknown mode")
+	}
 }
 
 // handleSignal handles system signal for graceful shutdown.

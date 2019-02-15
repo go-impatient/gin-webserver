@@ -11,11 +11,15 @@ import (
 
 )
 
-type BaseModel struct {
-	ID        uint64     `gorm:"primary_key;AUTO_INCREMENT;column:id" json:"-"`
-	CreatedAt time.Time  `gorm:"column:createdAt" json:"-"`
-	UpdatedAt time.Time  `gorm:"column:updatedAt" json:"-"`
-	DeletedAt *time.Time `gorm:"column:deletedAt" sql:"index" json:"-"`
+var Models = []interface{}{
+	&User{},
+}
+
+type Model struct {
+	ID        uint64     `gorm:"primary_key;AUTO_INCREMENT;column:id" json:"id"`
+	CreatedAt time.Time  `gorm:"column:createdAt" json:"createdAt"`
+	UpdatedAt time.Time  `gorm:"column:updatedAt" json:"updatedAt"`
+	DeletedAt *time.Time `gorm:"column:deletedAt" sql:"index" json:"deletedAt"`
 }
 
 type WhereParam struct {

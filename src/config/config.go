@@ -4,15 +4,15 @@ import (
 	"bytes"
 	"strings"
 
-	"github.com/moocss/go-webserver/src/log"
 	"github.com/fsnotify/fsnotify"
+	"github.com/moocss/go-webserver/src/log"
 	"github.com/spf13/viper"
 )
 
 var defaultConfig = []byte(`
 core:
   enabled: true                   # enabale httpd server
-  mode: "debug"                   # 开发模式, debug, release, test
+  mode: "dev"             				# dev(debug), prod(release), test
   name: "apiserver"               # API Server的名字
   host: ""                        # ip address to bind (default: any)
   port: "9090"                    # HTTP 绑定端口.
