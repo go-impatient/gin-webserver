@@ -1,4 +1,4 @@
-package model
+package user
 
 import (
 	"strings"
@@ -9,7 +9,7 @@ import (
 
 func TestUser(t *testing.T)  {
 	assert := assert.New(t)
-	user := &UserModel{
+	user := &User{
 		Username: "test",
 		Password: "test",
 	}
