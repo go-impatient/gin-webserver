@@ -1,70 +1,24 @@
-package model
+package user
 
 import (
-	"encoding/json"
-	"time"
+	validator "gopkg.in/go-playground/validator.v9"
+	"github.com/moocss/go-webserver/src/model"
+	"github.com/moocss/go-webserver/src/schema/user"
+	"github.com/moocss/go-webserver/src/pkg/auth"
 )
 
-// 创建一个User数据模型
-type User struct {
-	Base
+const (
+	TableName = "user"
+)
 
-	Username string `gorm:"type:varchar(100);column:username;not null" json:"username"`
-	Password string `gorm:"type:varchar(50);column:password;not null" json:"password"`
-	Email    string `gorm:"type:varchar(100);column:email;unique;not null;" json:"email"`
+// 创建用户
+func Create(data *user.User) bool {
+	return model.Create(TableName, &data)
 }
 
-// TableName, 获取User表名称
-func UserTableName() string {
-	return "user"
-}
-
-// UserFrom, 解析JSON字符串并返回一个 User 实例
-func UserFrom(str string) (*User, error) {
-	user := new(User)
-	if err := json.Unmarshal([]byte(str), user); err != nil {
-		return nil, err
-	}
-	return user, nil
-}
-
-// String, 返回一个为JSON 字符串的用户信息
-func (u *User) String() string {
-	return jsonMarshal(u)
-}
-
-// Result, 返回一个 UserResult 实例
-func (u *User) Result() *UserResult {
-	return &UserResult{
-		ID:      u.ID,
-		Username: u.Username,
-		Email: u.Email,
-		CreatedAt: u.CreatedAt,
-		UpdatedAt: u.UpdatedAt,
-	}
-}
-
-// 创建一个脱敏的User数据模型
-type UserResult struct {
-	ID        uint64 `json:"id"`
-	Username  string `json:"username"`
-	Email 		string `json:"email"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-}
-
-// String, 返回一个为JSON 字符串的脱敏用户信息
-func (u *UserResult) String() string {
-	return jsonMarshal(u)
-}
-
-
-func Create(data *schema.User) bool {
-	return model.Create(schema.UserTableName(), data)
-}
-
+// 更新用户
 func Update(id uint64, data map[string]interface{}) bool {
-	ok := model.Update(schema.UserTableName(), data, model.QueryParam{
+	ok := model.Update(TableName, data, model.QueryParam{
 		Where: []model.WhereParam{
 			model.WhereParam{
 				Field: "id",
@@ -75,33 +29,56 @@ func Update(id uint64, data map[string]interface{}) bool {
 	return ok
 }
 
-func List(query model.QueryParam) ([]schema.User, bool) {
-	var data []schema.User
-	ok := model.GetMulti(schema.UserTableName(), &data, query)
+// 删除用户
+func Delete(id uint64) bool {
+	user := user.User{}
+	user.ID = id
+	ok := model.DeleteById(user.TableName(), &user)
+	return ok
+}
+
+// 获取用户列表
+func List(query model.QueryParam) ([]*user.User, bool) {
+	data := make([]*user.User, 0)
+	ok := model.GetMulti(TableName, &data, query)
 	return data, ok
 }
 
+// 根据用户某一条件，统计用户数据条数
 func Total(query model.QueryParam) (int, bool) {
 	var count int
-	ok := model.Count(schema.UserTableName(), &count, query)
+	ok := model.Count(TableName, &count, query)
 	return count, ok
 }
 
-func Get(id uint64) (schema.User, bool) {
-	var data schema.User
-	ok := model.GetByPk(schema.UserTableName(), &data, id)
+// 根据用户ID, 获取用户数据
+func Get(id uint64) (*user.User, bool) {
+	data := &user.User{}
+	ok := model.GetById(TableName, &data, id)
 	return data, ok
 }
 
-func GetOne(query model.QueryParam) (schema.User, bool) {
-	var data schema.User
-	ok := model.GetOne(schema.UserTableName(), &data, query)
+// 根据用户某一条件，获取用户数据
+func GetOne(query model.QueryParam) (*user.User, bool) {
+	data := &user.User{}
+	ok := model.GetOne(TableName, &data, query)
 	return data, ok
 }
 
-func Delete(id uint64) bool {
-	user := schema.User{}
-	user.ID = id
-	ok := model.DeleteByPk(schema.UserTableName(), &user)
-	return ok
+// Compare with the plain text password.
+func Compare(data *user.User, pwd string) (err error) {
+	err = auth.Compare(data.Password, pwd)
+	return
+}
+
+// Encrypt the user password.
+func Encrypt(data *user.User) (err error) {
+	data.Password, err = auth.Encrypt(data.Password)
+	return
+}
+
+// Validate the fields.
+func Validate(data *user.User) error {
+	validate := validator.New()
+	return validate.Struct(data)
 }

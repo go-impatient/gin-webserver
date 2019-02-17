@@ -1,4 +1,4 @@
-package schema
+package user
 
 import (
 	"strings"

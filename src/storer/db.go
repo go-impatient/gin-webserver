@@ -7,7 +7,6 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres" // enable the postgres dialect
 	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/log"
-	"github.com/moocss/go-webserver/src/model"
 	"time"
 )
 
@@ -47,14 +46,6 @@ func (d *Database) Close() {
 
 func (d *Database) GetTablePrefix() string {
 	return d.cfg.TablePrefix
-}
-
-// migrate migrates database schemas ...
-func (d *Database) Migrate() {
-	err := d.Self.AutoMigrate(model.Models...).Error
-	if err != nil {
-		log.Fatalf("auto migrate tables failed:", err.Error())
-	}
 }
 
 func realDSN(driver, dbname, username, password, addr, charset string) string {

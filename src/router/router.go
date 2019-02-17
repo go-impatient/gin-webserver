@@ -5,11 +5,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	sdHandler "github.com/moocss/go-webserver/src/handler/api/sd"
-	// userHandler "github.com/moocss/go-webserver/src/handler/api/user"
 	"github.com/moocss/go-webserver/src/pkg/version"
 	"github.com/moocss/go-webserver/src/router/middleware"
-	errorModel "github.com/moocss/go-webserver/src/schema"
+	"github.com/moocss/go-webserver/src/schema/error"
+
+	sdHandler "github.com/moocss/go-webserver/src/handler/api/sd"
+	// userHandler "github.com/moocss/go-webserver/src/handler/api/user"
 )
 
 func rootHandler(c *gin.Context) {
@@ -28,11 +29,7 @@ func versionHandler(c *gin.Context) {
 // NotFound creates a gin middleware for handling page not found.
 func NotFound() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusNotFound, &errorModel.Error{
-			Error:            http.StatusText(http.StatusNotFound),
-			ErrorCode:        http.StatusNotFound,
-			ErrorDescription: "page not found",
-		})
+		error.SendError(c)
 	}
 }
 

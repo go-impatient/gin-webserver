@@ -481,6 +481,10 @@
 			"revisionTime": "2017-07-30T05:02:35Z"
 		},
 		{
+			"path": "gopkg.in/go-playground/validator.v9",
+			"revision": ""
+		},
+		{
 			"checksumSHA1": "iq5WdjScmTU+LfNoerLuwcnXpdM=",
 			"path": "gopkg.in/gomail.v2",
 			"revision": "81ebce5c23dfd25c6c67194b37d3dd3f338c98b1",

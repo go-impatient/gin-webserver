@@ -2,29 +2,28 @@ package mail
 
 import (
 	"github.com/moocss/go-webserver/src/log"
-	"github.com/moocss/go-webserver/src/util"
-	"github.com/moocss/go-webserver/src/server"
+	"github.com/moocss/go-webserver/src"
 )
 
-type SendMail struct {
+type Mail struct {
 	To          []string
 	Cc          []string
 	Subject     string
 	Body        string
 }
 
-func (m *SendMail) Send() error {
+func (m *Mail) Send() error {
 	return m.send()
 }
 
-func (m *SendMail) AsyncSend() {
+func (m *Mail) AsyncSend() {
 	go func() {
 		m.send()
 	}()
 }
 
-func (m *SendMail) send() error {
-	err := server.Mail.Send(&util.SendMailMessage{
+func (m *Mail) send() error {
+	err := src.Mail.Send(&SendMailMessage{
 		To:      m.To,
 		Cc:      m.Cc,
 		Subject: m.Subject,

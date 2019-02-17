@@ -21,6 +21,7 @@ import (
 	"github.com/moocss/go-webserver/src/router"
 	"github.com/moocss/go-webserver/src/router/middleware"
 	"github.com/moocss/go-webserver/src/storer"
+	"github.com/moocss/go-webserver/src/pkg/mail"
 	"github.com/moocss/go-webserver/src/util"
 )
 
@@ -28,8 +29,9 @@ var (
 	A								*App
 	Orm           	*gorm.DB
 	DbInstance   		*storer.Database
-	Mail            *util.SendMail
+	Mail            *mail.SendMail
 )
+
 
 // App 项目
 type App struct {
@@ -53,9 +55,6 @@ func (app *App) InitDB() {
 		panic(err)
 	}
 
-	// auto migration
-	// db.Migrate()
-
 	Orm = DbInstance.Self
 
 	defer db.Close()
@@ -63,7 +62,7 @@ func (app *App) InitDB() {
 
 // Init initializes mail pkg.
 func (app *App)InitMail() {
-	Mail = util.SendMailNew(&util.SendMail{
+	Mail = mail.SendMailNew(&mail.SendMail{
 		Enabled: app.config.Mail.Enable,
 		Smtp: app.config.Mail.Smtp,
 		Port: app.config.Mail.Port,
