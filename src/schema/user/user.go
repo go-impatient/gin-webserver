@@ -3,11 +3,13 @@ package schema
 import (
 	"encoding/json"
 	"time"
+
+	validator "gopkg.in/go-playground/validator.v9"
 )
 
 // 创建一个User数据模型
 type User struct {
-	BaseModel
+	Base
 
 	Username string `gorm:"type:varchar(100);column:username;not null" json:"username"`
 	Password string `gorm:"type:varchar(50);column:password;not null" json:"password"`
@@ -15,7 +17,7 @@ type User struct {
 }
 
 // TableName, 获取User表名称
-func UserTableName() string {
+func TableName() string {
 	return "user"
 }
 
@@ -30,7 +32,7 @@ func UserFrom(str string) (*User, error) {
 
 // String, 返回一个为JSON 字符串的用户信息
 func (u *User) String() string {
-	return jsonMarshal(u)
+	return JsonMarshal(u)
 }
 
 // Result, 返回一个 UserResult 实例
@@ -55,5 +57,11 @@ type UserResult struct {
 
 // String, 返回一个为JSON 字符串的脱敏用户信息
 func (u *UserResult) String() string {
-	return jsonMarshal(u)
+	return JsonMarshal(u)
+}
+
+// Validate the fields.
+func (u *User) Validate() error {
+	validate := validator.New()
+	return validate.Struct(u)
 }

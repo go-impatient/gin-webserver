@@ -6,7 +6,6 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/moocss/go-webserver/src"
 	"github.com/moocss/go-webserver/src/log"
-
 )
 
 type WhereParam struct {
@@ -31,6 +30,7 @@ func Create(tableName string, data interface{}) bool {
 	}
 	return true
 }
+
 func GetMulti(tableName string, data interface{}, query QueryParam) bool {
 	db := src.Orm.Table(setTableName(tableName)).Offset(query.Offset)
 	if query.Limit > 0 {
@@ -76,7 +76,7 @@ func GetOne(tableName string, data interface{}, query QueryParam) bool {
 	return true
 }
 
-func GetByPk(tableName string, data interface{}, id interface{}) bool {
+func GetById(tableName string, data interface{}, id interface{}) bool {
 	db := src.Orm.Table(setTableName(tableName))
 	db.First(data, id)
 	if err := db.Error; err != nil && !db.RecordNotFound() {
@@ -112,7 +112,7 @@ func Delete(tableName string, data interface{}, query QueryParam) bool {
 	return true
 }
 
-func DeleteByPk(tableName string, data interface{}) bool {
+func DeleteById(tableName string, data interface{}) bool {
 	db := src.Orm.Table(setTableName(tableName))
 	db.Delete(data)
 	if err := db.Error; err != nil {
