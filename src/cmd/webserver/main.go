@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/moocss/go-webserver/src"
 	"os"
 
+	"github.com/moocss/go-webserver/src"
 	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/pkg/log"
 	"github.com/moocss/go-webserver/src/pkg/version"
@@ -39,6 +39,14 @@ var flags = []cli.Flag{
 		EnvVar: "WEBSERVER_CONFING",
 		Name:   "config, c",
 		Usage:  "set config file",
+	},
+}
+
+var commands = []cli.Command{
+	{
+		Name:   "ping",
+		Usage:  "ping the agent",
+		Action: pinger,
 	},
 }
 
@@ -98,6 +106,7 @@ func run() {
 	app.Usage = "go web server"
 	app.UsageText = usageStr
 	app.Action = start
+	app.Commands = commands
 	app.Flags = flags
 	app.Before = func(c *cli.Context) error {
 		fmt.Fprintf(c.App.Writer, "brace for impact\n")

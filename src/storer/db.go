@@ -4,13 +4,20 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mssql"    // enable the mssql dialect
 	_ "github.com/jinzhu/gorm/dialects/mysql"    // enable the mysql dialect
 	_ "github.com/jinzhu/gorm/dialects/postgres" // enable the postgres dialect
 	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/pkg/log"
+
+	"github.com/moocss/go-webserver/src/schema/user"
 )
+
+var Models = []interface{}{
+	&user.User{},
+}
 
 type Database struct {
 	Self *gorm.DB
@@ -48,6 +55,30 @@ func (d *Database) Close() {
 
 func (d *Database) GetTablePrefix() string {
 	return d.cfg.TablePrefix
+}
+
+// migrate migrates database schemas ...
+func (d *Database) Migrate() error {
+	err := d.Self.AutoMigrate(Models...).Error
+	if err != nil {
+		return errors.Wrap(err, "auto migrate tables failed")
+	}
+
+	return nil
+}
+
+// creates necessary database tables
+func (d *Database) CreateTables() error {
+	for _, model := range Models {
+		if !d.Self.HasTable(model) {
+			err := d.Self.CreateTable(model).Error
+			if err != nil {
+				return errors.Wrap(err, "create table failed")
+			}
+		}
+	}
+
+	return nil
 }
 
 func realDSN(driver, dbname, username, password, addr, charset string) string {

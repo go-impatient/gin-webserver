@@ -23,7 +23,7 @@ func rootHandler(c *gin.Context) {
 func versionHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"source":  "https://github.com/go-impatient/go-webserver",
-		"version": version.Info.String(),
+		"version": version.Version.String(),
 	})
 }
 
