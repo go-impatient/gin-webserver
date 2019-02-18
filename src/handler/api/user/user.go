@@ -4,30 +4,38 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/moocss/go-webserver/src/schema/result"
-	userService "github.com/moocss/go-webserver/src/service/user"
 	"github.com/moocss/go-webserver/src/pkg/errno"
+	"github.com/moocss/go-webserver/src/schema/result"
+	"github.com/moocss/go-webserver/src/schema/user"
+	"github.com/moocss/go-webserver/src/service"
 )
 
-func Get(c *gin.Context)  {
-	userId, _ := strconv.Atoi(c.Param("id"))
+func GetUser(userService service.UserService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		username := c.Param("username")
 
-	user, err := userService.GetUserById(uint64(userId))
+		user, err := userService.ShowUser(username)
 
-	if err != nil {
-		result.SendResult(c, errno.ErrUserNotFound, nil)
-		return
+		if err != nil {
+			result.SendResult(c, errno.ErrUserNotFound, nil)
+			return
+		}
+
+		result.SendResult(c, nil, user)
 	}
-
-	result.SendResult(c, nil, user)
 }
 
-func Delete(c *gin.Context) {
-	userId, _ := strconv.Atoi(c.Param("id"))
-	if err := userService.Delete(uint64(userId)); err != nil {
-		result.SendResult(c, errno.ErrDatabase, nil)
-		return
-	}
+func DeleteUser(userService service.UserService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userId, _ := strconv.Atoi(c.Param("id"))
+		user := &user.User{}
+		user.ID = uint64(userId)
 
-	result.SendResult(c, nil, nil)
+		if err := userService.DeleteUser(user); err != nil {
+			result.SendResult(c, errno.ErrDatabase, nil)
+			return
+		}
+
+		result.SendResult(c, nil, nil)
+	}
 }

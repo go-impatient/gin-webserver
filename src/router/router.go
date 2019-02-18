@@ -1,16 +1,17 @@
 package router
 
 import (
-	"github.com/gin-contrib/cors"
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/moocss/go-webserver/src/pkg/version"
 	"github.com/moocss/go-webserver/src/router/middleware"
 	"github.com/moocss/go-webserver/src/schema/error"
+	"github.com/moocss/go-webserver/src/service"
 
 	sdHandler "github.com/moocss/go-webserver/src/handler/api/sd"
-	// userHandler "github.com/moocss/go-webserver/src/handler/api/user"
+	userHandler "github.com/moocss/go-webserver/src/handler/api/user"
 )
 
 func rootHandler(c *gin.Context) {
@@ -33,8 +34,11 @@ func NotFound() gin.HandlerFunc {
 	}
 }
 
-// Load loads the middlewares, routes, handlers.
-func Load(g *gin.Engine, mws ...gin.HandlerFunc) *gin.Engine {
+// Load loads the services, middlewares, routes, handlers.
+func Load(s service.Service, middlewares ...gin.HandlerFunc) *gin.Engine {
+	// gin server
+	g := gin.New()
+
 	// CORS
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AddAllowHeaders("Authorization")
@@ -49,7 +53,7 @@ func Load(g *gin.Engine, mws ...gin.HandlerFunc) *gin.Engine {
 	g.Use(middleware.Options)
 	g.Use(middleware.Secure)
 	g.Use(middleware.Version)
-	g.Use(mws...)
+	g.Use(middlewares...)
 
 	// 404 Handler.
 	g.NoRoute(NotFound())
@@ -77,7 +81,7 @@ func Load(g *gin.Engine, mws ...gin.HandlerFunc) *gin.Engine {
 			user.DELETE("/:id", func(context *gin.Context) {})
 			user.PUT("/:id", func(context *gin.Context) {})
 			user.GET("", func(context *gin.Context) {})
-			user.GET("/:username", func(context *gin.Context) {})
+			user.GET("/:username", userHandler.GetUser(s))
 		}
 	}
 

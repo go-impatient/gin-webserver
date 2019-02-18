@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/moocss/go-webserver/src/config"
-	"github.com/moocss/go-webserver/src/log"
+	"github.com/moocss/go-webserver/src/pkg/log"
 	"github.com/moocss/go-webserver/src/pkg/version"
 	"github.com/urfave/cli"
 	"golang.org/x/sync/errgroup"
@@ -48,8 +48,8 @@ func start(c *cli.Context) error {
 	)
 
 	// 设置默认配置
-	cfg, err := config.Init(c.String("c"));
-	if  err != nil {
+	cfg, err := config.Init(c.String("c"))
+	if err != nil {
 		log.Infof("Load yaml config file error: '%v'", err)
 		os.Exit(-1)
 	}
@@ -85,7 +85,7 @@ func start(c *cli.Context) error {
 	})
 
 	if err := g.Wait(); err != nil {
-		log.Error("接口服务出错了：", err)
+		log.Error("服务出错了：", err)
 	}
 
 	return g.Wait()

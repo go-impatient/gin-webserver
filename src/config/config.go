@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/moocss/go-webserver/src/log"
+	"github.com/moocss/go-webserver/src/pkg/log"
 	"github.com/spf13/viper"
 )
 

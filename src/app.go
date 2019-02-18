@@ -3,6 +3,7 @@ package src
 import (
 	"crypto/tls"
 	"errors"
+	"github.com/moocss/go-webserver/src/service"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,26 +18,24 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/moocss/go-webserver/src/config"
-	"github.com/moocss/go-webserver/src/log"
+	"github.com/moocss/go-webserver/src/pkg/log"
+	"github.com/moocss/go-webserver/src/pkg/mail"
 	"github.com/moocss/go-webserver/src/router"
 	"github.com/moocss/go-webserver/src/router/middleware"
 	"github.com/moocss/go-webserver/src/storer"
-	"github.com/moocss/go-webserver/src/pkg/mail"
 	"github.com/moocss/go-webserver/src/util"
 )
 
 var (
-	A								*App
-	Orm           	*gorm.DB
-	DbInstance   		*storer.Database
-	Mail            *mail.SendMail
+	A          *App
+	Orm        *gorm.DB
+	DbInstance *storer.Database
+	Mail       *mail.SendMail
 )
-
 
 // App 项目
 type App struct {
 	config *config.Config
-	serve  *gin.Engine
 	// cache *storer.CacheStore
 	// ...
 }
@@ -44,7 +43,6 @@ type App struct {
 func NewApp(cfg *config.Config) *App {
 	return &App{
 		config: cfg,
-		serve: gin.New(),
 	}
 }
 
@@ -61,18 +59,18 @@ func (app *App) InitDB() {
 }
 
 // Init initializes mail pkg.
-func (app *App)InitMail() {
+func (app *App) InitMail() {
 	Mail = mail.SendMailNew(&mail.SendMail{
-		Enabled: app.config.Mail.Enable,
-		Smtp: app.config.Mail.Smtp,
-		Port: app.config.Mail.Port,
+		Enabled:  app.config.Mail.Enable,
+		Smtp:     app.config.Mail.Smtp,
+		Port:     app.config.Mail.Port,
 		Username: app.config.Mail.Username,
 		Password: app.config.Mail.Password,
 	})
 }
 
 // Init initializes log pkg.
-func (app *App)InitLog() {
+func (app *App) InitLog() {
 	wzap.SetDefaultDir("./log/")
 	logger := wzap.New(
 		wzap.WithOutput(
@@ -89,7 +87,7 @@ func (app *App)InitLog() {
 }
 
 // RunHTTPServer provide run http or https protocol.
-func (app *App)RunHTTPServer() (err error) {
+func (app *App) RunHTTPServer() (err error) {
 	if !app.config.Core.Enabled {
 		log.Debug("httpd server is disabled.")
 		return nil
@@ -114,7 +112,7 @@ func autoTLSServer(app *App) error {
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist(app.config.Core.AutoTLS.Host),
 		// Cache:      autocert.DirCache(app.config.Core.AutoTLS.Folder),
-		Cache:      autocert.DirCache(dir),
+		Cache: autocert.DirCache(dir),
 	}
 
 	g.Go(func() error {
@@ -123,12 +121,12 @@ func autoTLSServer(app *App) error {
 
 	g.Go(func() error {
 		serve := &http.Server{
-			Addr:      ":https",
+			Addr: ":https",
 			TLSConfig: &tls.Config{
 				GetCertificate: manager.GetCertificate,
 				NextProtos:     []string{"http/1.1"}, // disable h2 because Safari :(
-		  },
-			Handler:   serve(app),
+			},
+			Handler: serve(app),
 		}
 		handleSignal(serve)
 		log.Info("Start to listening the incoming requests on https address")
@@ -156,7 +154,7 @@ func defaultTLSServer(app *App) error {
 		return serve.ListenAndServeTLS(
 			app.config.Core.TLS.CertPath,
 			app.config.Core.TLS.KeyPath,
-    )
+		)
 	})
 	return g.Wait()
 }
@@ -190,17 +188,22 @@ func serve(app *App) *gin.Engine {
 	// Set gin mode.
 	setRuntimeMode(app.config.Core.Mode)
 
-	// Routes
-	router.Load(
-		// Cores
-		app.serve,
+	// Setup Business Layer
+	s := service.NewService()
+
+	// Setup the server
+	handler := router.Load(
+		// Services
+		s,
+
 		// Middlwares
 		middleware.RequestId(),
 	)
-	return app.serve
+
+	return handler
 }
 
-func setRuntimeMode(mode string)  {
+func setRuntimeMode(mode string) {
 	switch mode {
 	case "dev":
 		gin.SetMode(gin.DebugMode)
@@ -231,7 +234,7 @@ func handleSignal(server *http.Server) {
 }
 
 // PingServer
-func (app *App)PingServer() (err error) {
+func (app *App) PingServer() (err error) {
 	maxPingConf := app.config.Core.MaxPingCount
 	for i := 0; i < maxPingConf; i++ {
 		// Ping the server by sending a GET request to `/health`.

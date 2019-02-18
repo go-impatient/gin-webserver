@@ -1,7 +1,7 @@
 #!/bin/bash
 
-web_repo="https://github.com/go-impatient/go-webserver"
-build_repo="https://github.com/go-impatient/go-webserver/cmd"
+web_repo="github.com/moocss/go-webserver"
+build_repo="github.com/moocss/go-webserver/cmd"
 
 install_path=$( cd `dirname $0`; pwd )/web-deploy
 

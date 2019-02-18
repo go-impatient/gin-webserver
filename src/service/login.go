@@ -1,5 +1,5 @@
-package user
+package service
 
 func main() {
-	
+
 }

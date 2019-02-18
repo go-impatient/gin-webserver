@@ -1,15 +1,15 @@
 package mail
 
 import (
-	"github.com/moocss/go-webserver/src/log"
 	"github.com/moocss/go-webserver/src"
+	"github.com/moocss/go-webserver/src/pkg/log"
 )
 
 type Mail struct {
-	To          []string
-	Cc          []string
-	Subject     string
-	Body        string
+	To      []string
+	Cc      []string
+	Subject string
+	Body    string
 }
 
 func (m *Mail) Send() error {

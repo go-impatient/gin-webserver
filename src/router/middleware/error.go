@@ -7,8 +7,9 @@ import (
 	"unicode"
 
 	"github.com/gin-gonic/gin"
-	"gopkg.in/go-playground/validator.v8"
-	errorModel "github.com/moocss/go-webserver/src/model/error"
+	"gopkg.in/go-playground/validator.v9"
+
+	"github.com/moocss/go-webserver/src/schema/error"
 )
 
 // Handler creates a gin middleware for handling errors.
@@ -40,17 +41,17 @@ func Handler() gin.HandlerFunc {
 	}
 }
 
-func validationErrorToText(e *validator.FieldError) string {
-	runes := []rune(e.Field)
+func validationErrorToText(e validator.FieldError) string {
+	runes := []rune(e.Field())
 	runes[0] = unicode.ToLower(runes[0])
 	fieldName := string(runes)
-	switch e.Tag {
+	switch e.Tag() {
 	case "required":
 		return fmt.Sprintf("Field '%s' is required", fieldName)
 	case "max":
-		return fmt.Sprintf("Field '%s' must be less or equal to %s", fieldName, e.Param)
+		return fmt.Sprintf("Field '%s' must be less or equal to %s", fieldName, e.Param())
 	case "min":
-		return fmt.Sprintf("Field '%s' must be more or equal to %s", fieldName, e.Param)
+		return fmt.Sprintf("Field '%s' must be more or equal to %s", fieldName, e.Param())
 	}
 	return fmt.Sprintf("Field '%s' is not valid", fieldName)
 }
@@ -60,9 +61,9 @@ func writeError(ctx *gin.Context, errString string) {
 	if ctx.Writer.Status() != http.StatusOK {
 		status = ctx.Writer.Status()
 	}
-	ctx.JSON(status, &errorModel.Error{
-		Error: http.StatusText(status),
-		ErrorCode: status,
+	ctx.JSON(status, &error.Error{
+		Error:            http.StatusText(status),
+		ErrorCode:        status,
 		ErrorDescription: errString,
 	})
 }

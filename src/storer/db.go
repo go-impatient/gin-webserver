@@ -2,17 +2,19 @@ package storer
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mssql"    // enable the mssql dialect
 	_ "github.com/jinzhu/gorm/dialects/mysql"    // enable the mysql dialect
 	_ "github.com/jinzhu/gorm/dialects/postgres" // enable the postgres dialect
 	"github.com/moocss/go-webserver/src/config"
-	"github.com/moocss/go-webserver/src/log"
-	"time"
+	"github.com/moocss/go-webserver/src/pkg/log"
 )
 
 type Database struct {
-	Self 	*gorm.DB
-	cfg	 	*config.ConfigDb
+	Self *gorm.DB
+	cfg  *config.ConfigDb
 }
 
 func NewDatabase(cfg *config.ConfigDb) *Database {
@@ -49,27 +51,32 @@ func (d *Database) GetTablePrefix() string {
 }
 
 func realDSN(driver, dbname, username, password, addr, charset string) string {
-	var connStr string
-	if "mysql" == driver {
+	connStr := ""
+	switch driver {
+	case "mysql":
 		connStr = fmt.Sprintf("%s:%s@%s/%s?charset=%s&parseTime=True&loc=Local", username, password, addr, dbname, charset)
-	} else {
+	case "postgres":
 		connStr = fmt.Sprintf("%s dbname=%s user=%s password=%s", addr, dbname, username, password)
+	case "mssql":
+		connStr = fmt.Sprintf("sqlserver://%s:%s@%s?database=%s", username, password, addr, dbname)
 	}
 	return connStr
 }
 
 func (d *Database) parseConnConfig() string {
-	var connHost string
-	if "mysql" == d.cfg.Dialect {
+	connHost := ""
+	switch d.cfg.Dialect {
+	case "mysql":
 		if d.cfg.Unix != "" {
 			connHost = fmt.Sprintf("unix(%s)", d.cfg.Unix)
 		} else {
 			connHost = fmt.Sprintf("tcp(%s:%s)", d.cfg.Host, d.cfg.Port)
 		}
-	} else {
+	case "postgres":
 		connHost = fmt.Sprintf("host=%s port=%s", d.cfg.Host, d.cfg.Port)
+	case "mssql":
+		connHost = fmt.Sprintf("%s:%s", d.cfg.Host, d.cfg.Port)
 	}
-
 	s := realDSN(d.cfg.Dialect, d.cfg.Username, d.cfg.Password, connHost, d.cfg.DbName, d.cfg.Charset)
 	return s
 }

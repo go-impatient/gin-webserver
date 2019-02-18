@@ -3,9 +3,10 @@ package model
 import (
 	"fmt"
 	"strings"
+
 	"github.com/jinzhu/gorm"
 	"github.com/moocss/go-webserver/src"
-	"github.com/moocss/go-webserver/src/log"
+	"github.com/moocss/go-webserver/src/pkg/log"
 )
 
 type WhereParam struct {
@@ -15,11 +16,11 @@ type WhereParam struct {
 }
 
 type QueryParam struct {
-	Fields     string
-	Offset     int
-	Limit      int
-	Order      string
-	Where      []WhereParam
+	Fields string
+	Offset int
+	Limit  int
+	Order  string
+	Where  []WhereParam
 }
 
 func Create(tableName string, data interface{}) bool {
@@ -127,7 +128,7 @@ func parseWhereParam(db *gorm.DB, where []WhereParam) *gorm.DB {
 		return db
 	}
 	var (
-		plain []string
+		plain   []string
 		prepare []interface{}
 	)
 	for _, w := range where {

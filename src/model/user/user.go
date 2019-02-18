@@ -1,10 +1,10 @@
 package user
 
 import (
-	validator "gopkg.in/go-playground/validator.v9"
 	"github.com/moocss/go-webserver/src/model"
-	"github.com/moocss/go-webserver/src/schema/user"
 	"github.com/moocss/go-webserver/src/pkg/auth"
+	"github.com/moocss/go-webserver/src/schema/user"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 const (
@@ -21,7 +21,7 @@ func Update(id uint64, data map[string]interface{}) bool {
 	ok := model.Update(TableName, data, model.QueryParam{
 		Where: []model.WhereParam{
 			model.WhereParam{
-				Field: "id",
+				Field:   "id",
 				Prepare: id,
 			},
 		},

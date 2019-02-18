@@ -41,10 +41,17 @@
 ├── README.md
 └── run                             # 本地快速启动脚本
 ```
-
+### 普通编译运行
+```bash
+$ cd $GOPATH/src/github.com/moocss/go-webserver
+$ gofmt -w .
+$ go tool vet .
+$ go build -v .
+$ ./apiserver
+```
 ### 源码交叉编译并安装
 ```bash
-curl https://raw.githubusercontent.com/dreamans/syncd/master/install.sh |bash
+curl $GOPATH/src/github.com/moocss/go-webserver/src/install.sh |bash
 ```
 
 ### Go 依赖
