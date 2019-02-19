@@ -1,4 +1,4 @@
-package src
+package server
 
 import (
 	"crypto/tls"
@@ -35,7 +35,7 @@ type App struct {
 	service		service.Service
 }
 
-func NewApp(cfg *config.Config, svc service.Service) *App {
+func New(cfg *config.Config, svc service.Service) *App {
 	return &App{
 		config: cfg,
 		service: svc,
