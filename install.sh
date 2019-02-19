@@ -14,7 +14,7 @@ if [ -z ${GOPATH} ];then
 fi
 
 build_server() {
-    go get ${build_repo}
+    # go get ${build_repo}
     cd $GOPATH/src/${build_repo}
     go run build.go
 }
