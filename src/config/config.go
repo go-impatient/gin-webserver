@@ -11,7 +11,7 @@ import (
 
 var defaultConfig = []byte(`
 core:
-  enabled: true                   # enabale httpd server
+  enabled: true                   # enabale httpd app
   mode: "dev"             				# dev(debug), prod(release), test
   name: "apiserver"               # API Server的名字
   host: ""                        # ip address to bind (default: any)
@@ -20,8 +20,8 @@ core:
   jwt_secret: "Rtg8BPKNEf2mB4mgvKONGPZZQSaJWNLijxR42qRgq0iBb5"
   tls:
     port: "9098"
-    cert_path: ""                 # src/config/server.crt
-    key_path: ""                  # src/config/server.key
+    cert_path: ""                 # src/config/app.crt
+    key_path: ""                  # src/config/app.key
   auto_tls:
     enabled: false                # Automatically install TLS certificates from Let's Encrypt.
     folder: ".cache"              # folder for storing TLS certificates

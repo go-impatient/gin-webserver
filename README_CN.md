@@ -42,17 +42,29 @@
 ├── README.md
 └── run                             # 本地快速启动脚本
 ```
+
+
+## gopm get 无科学上网拉包
+例如 swaggo 包有引用golang.org上的包，无科学上网若，你可以使用 gopm 进行安装
+```bash
+go get -u github.com/gpmgo/gopm
+
+gopm get -g -v github.com/swaggo/swag/cmd/swag
+cd $GOPATH/src/github.com/swaggo/swag/cmd/swag
+go install
+```
+
 ### 普通编译运行
 ```bash
-$ cd $GOPATH/src/github.com/moocss/go-webserver
-$ gofmt -w .
-$ go tool vet .
-$ go build -v .
-$ ./apiserver
+cd $GOPATH/src/github.com/moocss/go-webserver
+gofmt -w .
+go tool vet .
+go build -v .
+./apiserver
 ```
 ### 源码交叉编译并安装
 ```bash
-curl $GOPATH/src/github.com/moocss/go-webserver/src/install.sh |bash
+bash $GOPATH/src/github.com/moocss/go-webserver/install.sh
 ```
 
 ### Go 依赖

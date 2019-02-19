@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/urfave/cli"
 	"github.com/moocss/go-webserver/src/pkg/version"
+	"github.com/urfave/cli"
 )
 
 func init() {

@@ -7,7 +7,7 @@ import (
 	"github.com/urfave/cli"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/moocss/go-webserver/src"
+	"github.com/moocss/go-webserver/src/app"
 	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/pkg/log"
 	"github.com/moocss/go-webserver/src/pkg/version"
@@ -35,7 +35,7 @@ var flags = []cli.Flag{
 	cli.BoolFlag{
 		EnvVar: "WEBSERVER_DEBUG",
 		Name:   "debug",
-		Usage:  "enable server debug mode",
+		Usage:  "enable app debug mode",
 	},
 	cli.StringFlag{
 		EnvVar: "WEBSERVER_CONFING",
@@ -77,7 +77,8 @@ func start(c *cli.Context) error {
 	// 创建业务数据操作服务
 	svc := service.New(cfg)
 
-	app := src.NewApp(cfg, svc)
+	// 创建后台服务
+	app := app.New(cfg, svc)
 
 	// 初始化日志服务
 	app.InitLog()
@@ -105,7 +106,7 @@ func run() {
 	app := cli.NewApp()
 	app.Name = "webserver"
 	app.Version = version.Info.String() // version.Version.String()
-	app.Usage = "go web server"
+	app.Usage = "go web app"
 	app.UsageText = usageStr
 	app.Action = start
 	app.Commands = commands

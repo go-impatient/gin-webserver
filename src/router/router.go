@@ -16,7 +16,7 @@ import (
 
 func rootHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"text": "Welcome to api server.",
+		"text": "Welcome to api app.",
 	})
 }
 
@@ -36,7 +36,7 @@ func NotFound() gin.HandlerFunc {
 
 // Load loads the services, middlewares, routes, handlers.
 func Load(s service.Service, middlewares ...gin.HandlerFunc) *gin.Engine {
-	// gin server
+	// gin app
 	g := gin.New()
 
 	// CORS

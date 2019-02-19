@@ -1,9 +1,8 @@
-package server
+package app
 
 import (
 	"crypto/tls"
 	"errors"
-	"github.com/moocss/go-webserver/src/service"
 	"net/http"
 	"os"
 	"os/signal"
@@ -16,17 +15,12 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/pkg/log"
-	"github.com/moocss/go-webserver/src/pkg/mail"
+	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/router"
 	"github.com/moocss/go-webserver/src/router/middleware"
 	"github.com/moocss/go-webserver/src/util"
-)
-
-var (
-	A          *App
-	Mail       *mail.SendMail
+	"github.com/moocss/go-webserver/src/service"
 )
 
 // App 项目
@@ -40,17 +34,6 @@ func New(cfg *config.Config, svc service.Service) *App {
 		config: cfg,
 		service: svc,
 	}
-}
-
-// Init initializes mail pkg.
-func (app *App) InitMail() {
-	Mail = mail.SendMailNew(&mail.SendMail{
-		Enabled:  app.config.Mail.Enable,
-		Smtp:     app.config.Mail.Smtp,
-		Port:     app.config.Mail.Port,
-		Username: app.config.Mail.Username,
-		Password: app.config.Mail.Password,
-	})
 }
 
 // Init initializes log pkg.
@@ -73,20 +56,20 @@ func (app *App) InitLog() {
 // RunHTTPServer provide run http or https protocol.
 func (app *App) RunHTTPServer() (err error) {
 	if !app.config.Core.Enabled {
-		log.Debug("httpd server is disabled.")
+		log.Debug("httpd app is disabled.")
 		return nil
 	}
 
 	if app.config.Core.AutoTLS.Enabled {
-		return autoTLSServer(app)
+		return app.autoTLSServer()
 	} else if app.config.Core.TLS.CertPath != "" && app.config.Core.TLS.KeyPath != "" {
-		return defaultTLSServer(app)
+		return app.defaultTLSServer()
 	} else {
-		return defaultServer(app)
+		return app.defaultServer()
 	}
 }
 
-func autoTLSServer(app *App) error {
+func (app *App) autoTLSServer() error {
 	var g errgroup.Group
 
 	dir := util.CacheDir()
@@ -100,7 +83,7 @@ func autoTLSServer(app *App) error {
 	}
 
 	g.Go(func() error {
-		return http.ListenAndServe(":http", manager.HTTPHandler(http.HandlerFunc(redirect)))
+		return http.ListenAndServe(":http", manager.HTTPHandler(http.HandlerFunc(app.redirect)))
 	})
 
 	g.Go(func() error {
@@ -120,10 +103,10 @@ func autoTLSServer(app *App) error {
 	return g.Wait()
 }
 
-func defaultTLSServer(app *App) error {
+func (app *App)defaultTLSServer() error {
 	var g errgroup.Group
 	g.Go(func() error {
-		return http.ListenAndServe(":http", http.HandlerFunc(redirect))
+		return http.ListenAndServe(":http", http.HandlerFunc(app.redirect))
 	})
 	g.Go(func() error {
 		serve := &http.Server{
@@ -143,7 +126,7 @@ func defaultTLSServer(app *App) error {
 	return g.Wait()
 }
 
-func defaultServer(app *App) error {
+func (app *App) defaultServer() error {
 	serve := &http.Server{
 		Addr:    "0.0.0.0:" + app.config.Core.Port,
 		Handler: serve(app),
@@ -155,8 +138,8 @@ func defaultServer(app *App) error {
 }
 
 // redirect ...
-func redirect(w http.ResponseWriter, req *http.Request) {
-	var serverHost string = A.config.Core.Host
+func (app *App) redirect(w http.ResponseWriter, req *http.Request) {
+	var serverHost = app.config.Core.Host
 	serverHost = strings.TrimPrefix(serverHost, "http://")
 	serverHost = strings.TrimPrefix(serverHost, "https://")
 	req.URL.Scheme = "https"
@@ -172,7 +155,7 @@ func serve(app *App) *gin.Engine {
 	// Set gin mode.
 	setRuntimeMode(app.config.Core.Mode)
 
-	// Setup the server
+	// Setup the app
 	handler := router.Load(
 		// Services
 		app.service,
@@ -206,7 +189,7 @@ func handleSignal(server *http.Server) {
 		s := <-c
 		log.Infof("got signal [%s], exiting apiserver now", s)
 		if err := server.Close(); nil != err {
-			log.Error("server close failed ", err)
+			log.Error("app close failed ", err)
 		}
 
 		log.Info("apiserver exited")
@@ -218,7 +201,7 @@ func handleSignal(server *http.Server) {
 func (app *App) PingServer() (err error) {
 	maxPingConf := app.config.Core.MaxPingCount
 	for i := 0; i < maxPingConf; i++ {
-		// Ping the server by sending a GET request to `/health`.
+		// Ping the app by sending a GET request to `/health`.
 		resp, err := http.Get("http://localhost:" + app.config.Core.Port + "/sd/health")
 		if err == nil && resp.StatusCode == 200 {
 			return nil

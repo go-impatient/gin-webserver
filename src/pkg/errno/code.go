@@ -6,7 +6,7 @@ var (
 	// 成功
 	OK 	= &Errno{Code: 0, Message: "OK"}
 	// 服务器错误
-	InternalServerError = &Errno{Code: 10001, Message: "Internal server error"}
+	InternalServerError = &Errno{Code: 10001, Message: "Internal app error"}
 	ErrBind             = &Errno{Code: 10002, Message: "Error occurred while binding the request body to the struct."}
 
 
