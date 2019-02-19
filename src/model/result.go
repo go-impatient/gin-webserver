@@ -1,4 +1,4 @@
-package result
+package model
 
 import (
 	"net/http"
@@ -15,7 +15,7 @@ type Result struct {
 }
 
 // 输出返回结果
-func Done(c *gin.Context, err error, data interface{}) {
+func SendResult(c *gin.Context, err error, data interface{}) {
 	code, message := errno.DecodeErr(err)
 
 	c.JSON(http.StatusOK, &Result{

@@ -1,4 +1,4 @@
-package error
+package model
 
 import (
 	"github.com/gin-gonic/gin"

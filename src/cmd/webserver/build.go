@@ -46,7 +46,7 @@ func main() {
 
 	gopath := os.Getenv("GOPATH")
 	args := []string{
-		"build -v -o webserver",
+		"build",
 		"-asmflags", fmt.Sprintf("-trimpath=%s", gopath),
 		"-gcflags", fmt.Sprintf("-trimpath=%s", gopath),
 	}

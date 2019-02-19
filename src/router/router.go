@@ -5,9 +5,9 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/moocss/go-webserver/src/model"
 	"github.com/moocss/go-webserver/src/pkg/version"
 	"github.com/moocss/go-webserver/src/router/middleware"
-	"github.com/moocss/go-webserver/src/schema/error"
 	"github.com/moocss/go-webserver/src/service"
 
 	sdHandler "github.com/moocss/go-webserver/src/handler/api/sd"
@@ -30,7 +30,7 @@ func versionHandler(c *gin.Context) {
 // NotFound creates a gin middleware for handling page not found.
 func NotFound() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		error.SendError(c)
+		model.SendError(c)
 	}
 }
 

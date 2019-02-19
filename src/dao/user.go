@@ -1,9 +1,8 @@
-package user
+package dao
 
 import (
 	"github.com/moocss/go-webserver/src/model"
 	"github.com/moocss/go-webserver/src/pkg/auth"
-	"github.com/moocss/go-webserver/src/schema/user"
 	"gopkg.in/go-playground/validator.v9"
 )
 
@@ -12,15 +11,15 @@ const (
 )
 
 // 创建用户
-func Create(data *user.User) bool {
-	return model.Create(TableName, &data)
+func (d *Dao) CreateUser(data *model.User) bool {
+	return d.Create(TableName, &data)
 }
 
 // 更新用户
-func Update(id uint64, data map[string]interface{}) bool {
-	ok := model.Update(TableName, data, model.QueryParam{
-		Where: []model.WhereParam{
-			model.WhereParam{
+func (d *Dao) UpdateUser(id uint64, data map[string]interface{}) bool {
+	ok := d.Update(TableName, data,QueryParam{
+		Where: []WhereParam{
+			WhereParam{
 				Field:   "id",
 				Prepare: id,
 			},
@@ -30,55 +29,55 @@ func Update(id uint64, data map[string]interface{}) bool {
 }
 
 // 删除用户
-func Delete(id uint64) bool {
-	user := user.User{}
+func (d *Dao) DeleteUser(id uint64) bool {
+	user := model.User{}
 	user.ID = id
-	ok := model.DeleteById(user.TableName(), &user)
+	ok := d.DeleteById(user.TableName(), &user)
 	return ok
 }
 
 // 获取用户列表
-func List(query model.QueryParam) ([]*user.User, bool) {
-	data := make([]*user.User, 0)
-	ok := model.GetMulti(TableName, &data, query)
+func (d *Dao) ListUser(query QueryParam) ([]*model.User, bool) {
+	data := make([]*model.User, 0)
+	ok := d.GetMulti(TableName, &data, query)
 	return data, ok
 }
 
 // 根据用户某一条件，统计用户数据条数
-func Total(query model.QueryParam) (int, bool) {
+func (d *Dao) GetUserTotal(query QueryParam) (int, bool) {
 	var count int
-	ok := model.Count(TableName, &count, query)
+	ok := d.Count(TableName, &count, query)
 	return count, ok
 }
 
 // 根据用户ID, 获取用户数据
-func Get(id uint64) (*user.User, bool) {
-	data := &user.User{}
-	ok := model.GetById(TableName, &data, id)
+func (d *Dao) GetUser(id uint64) (*model.User, bool) {
+	data := &model.User{}
+	ok := d.GetById(TableName, &data, id)
 	return data, ok
 }
 
 // 根据用户某一条件，获取用户数据
-func GetOne(query model.QueryParam) (*user.User, bool) {
-	data := &user.User{}
-	ok := model.GetOne(TableName, &data, query)
+func (d *Dao) GetUserOne(query QueryParam) (*model.User, bool) {
+	data := &model.User{}
+	ok := d.GetOne(TableName, &data, query)
 	return data, ok
 }
 
 // Compare with the plain text password.
-func Compare(data *user.User, pwd string) (err error) {
+func (d *Dao) Compare(data *model.User, pwd string) (err error) {
 	err = auth.Compare(data.Password, pwd)
 	return
 }
 
 // Encrypt the user password.
-func Encrypt(data *user.User) (err error) {
+func (d *Dao) Encrypt(data *model.User) (err error) {
 	data.Password, err = auth.Encrypt(data.Password)
 	return
 }
 
 // Validate the fields.
-func Validate(data *user.User) error {
+func (d *Dao) Validate(data *model.User) error {
 	validate := validator.New()
 	return validate.Struct(data)
 }

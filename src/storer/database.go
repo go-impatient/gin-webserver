@@ -30,20 +30,22 @@ func NewDatabase(cfg *config.ConfigDb) *Database {
 	}
 }
 
-func (d *Database) Open() (*Database, error) {
-	db, err := gorm.Open(d.cfg.Dialect, d.parseConnConfig())
+func (d *Database) Open() error {
+	g, err := gorm.Open(d.cfg.Dialect, d.parseConnConfig())
 	if err != nil {
 		log.Errorf("Database connection failed.", err)
-		return nil, err
+		return err
 	}
 
 	// set for db connection
-	db.DB().SetMaxOpenConns(d.cfg.MaxOpenConns) // 用于设置最大打开的连接数，默认值为0表示不限制.设置最大的连接数，可以避免并发太高导致连接mysql出现too many connections的错误。
-	db.DB().SetMaxIdleConns(d.cfg.MaxIdleConns) // 用于设置闲置的连接数.设置闲置的连接数则当开启的一个连接使用完成后可以放在池里等候下一次使用。
-	db.DB().SetConnMaxLifetime(time.Second * time.Duration(d.cfg.ConnMaxLifeTime))
-	db.LogMode(true)
+	g.DB().SetMaxOpenConns(d.cfg.MaxOpenConns) // 用于设置最大打开的连接数，默认值为0表示不限制.设置最大的连接数，可以避免并发太高导致连接mysql出现too many connections的错误。
+	g.DB().SetMaxIdleConns(d.cfg.MaxIdleConns) // 用于设置闲置的连接数.设置闲置的连接数则当开启的一个连接使用完成后可以放在池里等候下一次使用。
+	g.DB().SetConnMaxLifetime(time.Second * time.Duration(d.cfg.ConnMaxLifeTime))
+	g.LogMode(true)
 
-	return &Database{Self: db}, nil
+	d.Self = g
+
+	return nil
 }
 
 func (d *Database) Close() {

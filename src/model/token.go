@@ -1,11 +1,7 @@
-package user
-
-import (
-	"github.com/moocss/go-webserver/src/schema"
-)
+package model
 
 type Token struct {
-	schema.Base
+	Base
 
 	Raw    string `gorm:"type:varchar(100);column:username;not null" json:"username"`
 	User   User   `gorm:"save_associations:false"" json:"user"`

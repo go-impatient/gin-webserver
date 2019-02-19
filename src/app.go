@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"github.com/sevennt/wzap"
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/sync/errgroup"
@@ -22,40 +21,25 @@ import (
 	"github.com/moocss/go-webserver/src/pkg/mail"
 	"github.com/moocss/go-webserver/src/router"
 	"github.com/moocss/go-webserver/src/router/middleware"
-	"github.com/moocss/go-webserver/src/storer"
 	"github.com/moocss/go-webserver/src/util"
 )
 
 var (
 	A          *App
-	Orm        *gorm.DB
-	DbInstance *storer.Database
 	Mail       *mail.SendMail
 )
 
 // App 项目
 type App struct {
-	config *config.Config
-	// cache *storer.CacheStore
-	// ...
+	config 		*config.Config
+	service		service.Service
 }
 
-func NewApp(cfg *config.Config) *App {
+func NewApp(cfg *config.Config, svc service.Service) *App {
 	return &App{
 		config: cfg,
+		service: svc,
 	}
-}
-
-func (app *App) InitDB() {
-	DbInstance = storer.NewDatabase(app.config.Db)
-	db, err := DbInstance.Open()
-	if err != nil {
-		panic(err)
-	}
-
-	Orm = DbInstance.Self
-
-	defer db.Close()
 }
 
 // Init initializes mail pkg.
@@ -188,13 +172,10 @@ func serve(app *App) *gin.Engine {
 	// Set gin mode.
 	setRuntimeMode(app.config.Core.Mode)
 
-	// Setup Business Layer
-	s := service.NewService()
-
 	// Setup the server
 	handler := router.Load(
 		// Services
-		s,
+		app.service,
 
 		// Middlwares
 		middleware.RequestId(),

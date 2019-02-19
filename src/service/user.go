@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/moocss/go-webserver/src/schema/user"
+	"github.com/moocss/go-webserver/src/model"
 )
 
 //func GetUserById(id uint64) (*user.User, error) {
@@ -105,10 +105,10 @@ import (
 //	return nil
 //}
 
-func (service *defaultService) ShowUser(string) (*user.User, error) {
+func (service *defaultService) ShowUser(string) (*model.User, error) {
 	panic("implement me")
 }
 
-func (service *defaultService) DeleteUser(*user.User) error {
+func (service *defaultService) DeleteUser(*model.User) error {
 	panic("implement me")
 }

@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/urfave/cli"
+	"golang.org/x/sync/errgroup"
+
 	"github.com/moocss/go-webserver/src"
 	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/pkg/log"
 	"github.com/moocss/go-webserver/src/pkg/version"
-	"github.com/urfave/cli"
-	"golang.org/x/sync/errgroup"
+	"github.com/moocss/go-webserver/src/service"
 )
 
 var usageStr = `
@@ -72,13 +74,13 @@ func start(c *cli.Context) error {
 		cfg.Core.Mode = "prod"
 	}
 
-	app := src.NewApp(cfg)
+	// 创建业务数据操作服务
+	svc := service.New(cfg)
+
+	app := src.NewApp(cfg, svc)
 
 	// 初始化日志服务
 	app.InitLog()
-
-	// 初始化数据服务
-	app.InitDB()
 
 	// 初始化邮件服务
 	// app.InitMail()

@@ -15,6 +15,7 @@
 │   │   ├── router                  # HTTP 路由相关
 │   │   │   ├── middleware          # HTTP 中间件存放位置
 │   │   │   └── router.go
+│   │   ├── dao                     # 数据库业务操作的服务
 │   │   ├── service                 # 封装好的服务
 │   │   ├── db                      # 数据库
 │   │   ├── util                    # 工具类包
