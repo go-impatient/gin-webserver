@@ -3,6 +3,11 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "NkpNQgmrdzGr9HUDL8Bp5YAxt0k=",
+			"path": "cloud.google.com/go/civil",
+			"revision": ""
+		},
+		{
 			"checksumSHA1": "4+grAgmYt+QU+sftz+pm7/UV5FM=",
 			"path": "github.com/StackExchange/wmi",
 			"revision": "e0a55b97c70558c92ce14085e41b35a894e93d3d",
@@ -574,6 +579,16 @@
 		},
 		{
 			"path": "golang.org/x/sys/windows",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "ziMb9+ANGRJSSIuxYdRbA+cDRBQ=",
+			"path": "golang.org/x/text/transform",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "Anof4bt0AU+Sa3R8Rq0KBnlpbaQ=",
+			"path": "golang.org/x/text/unicode/norm",
 			"revision": ""
 		},
 		{
