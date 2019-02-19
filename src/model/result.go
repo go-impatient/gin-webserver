@@ -14,10 +14,11 @@ type Result struct {
 	Data 			interface{} `json:"data"` // data object
 }
 
-func SendResult(c *gin.Context, err error, data interface{}) {
+// 输出返回结果
+func Done(c *gin.Context, err error, data interface{}) {
 	code, message := errno.DecodeErr(err)
 
-	c.JSON(http.StatusOK, Result{
+	c.JSON(http.StatusOK, &Result{
 		Code:    code,
 		Message: message,
 		Data:    data,

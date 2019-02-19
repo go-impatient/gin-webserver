@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mssql"    // enable the mssql dialect
 	_ "github.com/jinzhu/gorm/dialects/mysql"    // enable the mysql dialect
 	_ "github.com/jinzhu/gorm/dialects/postgres" // enable the postgres dialect
 	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/pkg/log"
+	"github.com/pkg/errors"
 
-	"github.com/moocss/go-webserver/src/schema/user"
+	"github.com/moocss/go-webserver/src/model"
 )
 
 var Models = []interface{}{
-	&user.User{},
+	&model.User{},
 }
 
 type Database struct {
