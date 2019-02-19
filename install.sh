@@ -1,7 +1,7 @@
 #!/bin/bash
 
 server_repo="github.com/moocss/go-webserver/src"
-build_repo="github.com/moocss/go-webserver/src/cmd/webserver"
+build_repo="github.com/moocss/go-webserver/src/cmd"
 
 install_path=$( cd `dirname $0`; pwd )/server-deploy
 

@@ -105,6 +105,36 @@
 			"revisionTime": "2018-12-15T01:52:07Z"
 		},
 		{
+			"checksumSHA1": "b4DmyMT9bicTRVJw1hJXHLhIH+0=",
+			"path": "github.com/go-playground/locales",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "JgF260rC9YpWyY5WEljjimWLUXs=",
+			"path": "github.com/go-playground/locales/currency",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "NbsPt6S8c0hulmiipDLLX840wgU=",
+			"path": "github.com/go-playground/locales/en",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "DeI56DNR5ykLMAfGcGrvppbqLx0=",
+			"path": "github.com/go-playground/locales/en_CA",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "O23BFI7nO3JVNeorLG+4uFu5Q5Q=",
+			"path": "github.com/go-playground/locales/fr",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "+OFks50DCiNEmotKHXQvyj3p4Go=",
+			"path": "github.com/go-playground/locales/nl",
+			"revision": ""
+		},
+		{
 			"checksumSHA1": "cO+J1RmVd3578k5JRxJ8fjQDjkQ=",
 			"path": "github.com/go-redis/redis",
 			"revision": "7f89fbac80bcc62ce920b6dbc6ca60238d7725d1",
@@ -265,6 +295,12 @@
 			"path": "github.com/json-iterator/go",
 			"revision": "10a568c51178f31e41456cedaac7838e0f4f7360",
 			"revisionTime": "2018-07-22T03:51:51Z"
+		},
+		{
+			"checksumSHA1": "O5KNHAjNKSO1Wh5/4JSnp/KXu9U=",
+			"path": "github.com/leodido/go-urn",
+			"revision": "a67a23e1c1af3c66528573bb86a87246477277c1",
+			"revisionTime": "2018-12-04T09:21:09Z"
 		},
 		{
 			"checksumSHA1": "uTUsjF7bymOuKvXbW2BpkK/w4Vg=",

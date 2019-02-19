@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gopkg.in/go-playground/validator.v9"
 
-	"github.com/moocss/go-webserver/src/model/error"
+	"github.com/moocss/go-webserver/src/model"
 )
 
 // Handler creates a gin middleware for handling errors.
@@ -61,7 +61,7 @@ func writeError(ctx *gin.Context, errString string) {
 	if ctx.Writer.Status() != http.StatusOK {
 		status = ctx.Writer.Status()
 	}
-	ctx.JSON(status, &error.Error{
+	ctx.JSON(status, &model.Error{
 		Error:            http.StatusText(status),
 		ErrorCode:        status,
 		ErrorDescription: errString,
