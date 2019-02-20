@@ -1,73 +1,55 @@
 package service
 
 import (
+	"errors"
 	"github.com/moocss/go-webserver/src/model"
 )
 
-//func GetUserById(id uint64) (*user.User, error) {
-//	user := &user.User{}
-//	user.ID = id
-//
-//	detail, err := UserDetail(user);
-//	if  err != nil {
-//		return nil, err
-//	}
-//
-//	return detail, nil
-//}
-//
-//func Delete(id uint64) error {
-//	user := &user.User{}
-//	user.ID = id
-//
-//	detail, err := UserDetail(user);
-//	if err != nil {
-//		return err
-//	}
-//
-//	ok := userModel.Delete(detail.ID)
-//	if !ok {
-//		return errors.New("用户删除失败")
-//	}
-//	return nil
-//}
-//
-//
-//func UserDetail(data *user.User) (*user.User, error) {
-//	if data.ID == 0 {
-//		return nil, errors.New("用户ID不能为空")
-//	}
-//
-//	detail, ok := userModel.Get(data.ID)
-//	if !ok {
-//		return nil, errors.New("获取用户详情数据失败")
-//	}
-//	if detail.ID == 0 {
-//		return nil, errors.New("用户不存在")
-//	}
-//
-//	return detail, nil
-//}
-//
-//func GetUserByName(data *user.User) (*user.User, error) {
-//	if data.Username == "" {
-//		return nil, errors.New("用户名不能为空")
-//	}
-//	detail, ok := userModel.GetOne(model.QueryParam{
-//		Where: []model.WhereParam{
-//			model.WhereParam{
-//				Field: "username",
-//				Prepare: data.Username,
-//			},
-//		},
-//	})
-//	if !ok {
-//		return nil, errors.New("获取用户详情数据失败")
-//	}
-//
-//	return detail, nil
-//}
-//
+func (service *defaultService) FindUser(username string) (*model.User, error) {
+	if username == "" {
+		return nil, errors.New("用户名不能为空")
+	}
+	detail, ok := service.dao.FindUserOne(&model.QueryParam{
+		Where: []model.WhereParam{
+			{
+				Field:   "username",
+				Prepare: username,
+			},
+		},
+	})
+	if !ok {
+		return nil, errors.New("获取用户详情数据失败")
+	}
+
+	return detail, nil
+}
+
+func (service *defaultService) FindUserById(id uint64) (*model.User, error) {
+	detail, err := service.UserDetail(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return detail, nil
+}
+
+func (service *defaultService) UserDetail(id uint64) (*model.User, error) {
+	if id < 0 {
+		return nil, errors.New("用户ID不能为空")
+	}
+
+	detail, ok := service.dao.FindUser(id)
+	if !ok {
+		return nil, errors.New("获取用户详情数据失败")
+	}
+
+	return detail, nil
+}
+
+func (service *defaultService) DeleteUser(data *model.User) error {
+	panic("implement me")
+}
+
 //func CreateOrUpdate(data *user.User) error {
 //	var ok bool
 //	user := &user.User{
@@ -104,11 +86,4 @@ import (
 //	}
 //	return nil
 //}
-
-func (service *defaultService) ShowUser(string) (*model.User, error) {
-	panic("implement me")
-}
-
-func (service *defaultService) DeleteUser(*model.User) error {
-	panic("implement me")
-}
+//

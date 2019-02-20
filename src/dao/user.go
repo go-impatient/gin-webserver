@@ -17,9 +17,9 @@ func (d *Dao) CreateUser(data *model.User) bool {
 
 // 更新用户
 func (d *Dao) UpdateUser(id uint64, data map[string]interface{}) bool {
-	ok := d.Update(TableName, data,QueryParam{
-		Where: []WhereParam{
-			WhereParam{
+	ok := d.Update(TableName, data, &model.QueryParam{
+		Where: []model.WhereParam{
+			model.WhereParam{
 				Field:   "id",
 				Prepare: id,
 			},
@@ -37,30 +37,30 @@ func (d *Dao) DeleteUser(id uint64) bool {
 }
 
 // 获取用户列表
-func (d *Dao) ListUser(query QueryParam) ([]*model.User, bool) {
+func (d *Dao) ListUser(query *model.QueryParam) ([]*model.User, bool) {
 	data := make([]*model.User, 0)
-	ok := d.GetMulti(TableName, &data, query)
+	ok := d.FindMulti(TableName, &data, query)
 	return data, ok
 }
 
 // 根据用户某一条件，统计用户数据条数
-func (d *Dao) GetUserTotal(query QueryParam) (int, bool) {
+func (d *Dao) FindUserTotal(query *model.QueryParam) (int, bool) {
 	var count int
 	ok := d.Count(TableName, &count, query)
 	return count, ok
 }
 
 // 根据用户ID, 获取用户数据
-func (d *Dao) GetUser(id uint64) (*model.User, bool) {
+func (d *Dao) FindUser(id uint64) (*model.User, bool) {
 	data := &model.User{}
-	ok := d.GetById(TableName, &data, id)
+	ok := d.FindById(TableName, &data, id)
 	return data, ok
 }
 
 // 根据用户某一条件，获取用户数据
-func (d *Dao) GetUserOne(query QueryParam) (*model.User, bool) {
+func (d *Dao) FindUserOne(query *model.QueryParam) (*model.User, bool) {
 	data := &model.User{}
-	ok := d.GetOne(TableName, &data, query)
+	ok := d.FindOne(TableName, &data, query)
 	return data, ok
 }
 

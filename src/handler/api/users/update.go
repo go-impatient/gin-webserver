@@ -1,5 +1,2 @@
-package main
+package users
 
-func main() {
-	
-}

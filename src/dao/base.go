@@ -5,22 +5,9 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
+	"github.com/moocss/go-webserver/src/model"
 	"github.com/moocss/go-webserver/src/pkg/log"
 )
-
-type WhereParam struct {
-	Field   string
-	Tag     string
-	Prepare interface{}
-}
-
-type QueryParam struct {
-	Fields string
-	Offset int
-	Limit  int
-	Order  string
-	Where  []WhereParam
-}
 
 func (d *Dao) Create(tableName string, data interface{}) bool {
 	db := d.orm.Table(d.setTableName(tableName)).Create(data)
@@ -31,7 +18,7 @@ func (d *Dao) Create(tableName string, data interface{}) bool {
 	return true
 }
 
-func (d *Dao) GetMulti(tableName string, data interface{}, query QueryParam) bool {
+func (d *Dao) FindMulti(tableName string, data interface{}, query *model.QueryParam) bool {
 	db := d.orm.Table(d.setTableName(tableName)).Offset(query.Offset)
 	if query.Limit > 0 {
 		db = db.Limit(query.Limit)
@@ -51,7 +38,7 @@ func (d *Dao) GetMulti(tableName string, data interface{}, query QueryParam) boo
 	return true
 }
 
-func (d *Dao) Count(tableName string, count *int, query QueryParam) bool {
+func (d *Dao) Count(tableName string, count *int, query *model.QueryParam) bool {
 	db := d.orm.Table(d.setTableName(tableName))
 	db = parseWhereParam(db, query.Where)
 	db = db.Count(count)
@@ -62,7 +49,7 @@ func (d *Dao) Count(tableName string, count *int, query QueryParam) bool {
 	return true
 }
 
-func (d *Dao) GetOne(tableName string, data interface{}, query QueryParam) bool {
+func (d *Dao) FindOne(tableName string, data interface{}, query *model.QueryParam) bool {
 	db := d.orm.Table(d.setTableName(tableName))
 	if query.Fields != "" {
 		db = db.Select(query.Fields)
@@ -76,7 +63,7 @@ func (d *Dao) GetOne(tableName string, data interface{}, query QueryParam) bool 
 	return true
 }
 
-func (d *Dao) GetById(tableName string, data interface{}, id interface{}) bool {
+func (d *Dao) FindById(tableName string, data interface{}, id interface{}) bool {
 	db := d.orm.Table(d.setTableName(tableName))
 	db.First(data, id)
 	if err := db.Error; err != nil && !db.RecordNotFound() {
@@ -86,7 +73,7 @@ func (d *Dao) GetById(tableName string, data interface{}, id interface{}) bool {
 	return true
 }
 
-func (d *Dao) Update(tableName string, data interface{}, query QueryParam) bool {
+func (d *Dao) Update(tableName string, data interface{}, query *model.QueryParam) bool {
 	db := d.orm.Table(d.setTableName(tableName))
 	db = parseWhereParam(db, query.Where)
 	db = db.Updates(data)
@@ -97,7 +84,7 @@ func (d *Dao) Update(tableName string, data interface{}, query QueryParam) bool 
 	return true
 }
 
-func (d *Dao) Delete(tableName string, data interface{}, query QueryParam) bool {
+func (d *Dao) Delete(tableName string, data interface{}, query *model.QueryParam) bool {
 	if len(query.Where) == 0 {
 		log.Warn("mysql query error: delete failed, where conditions cannot be empty")
 		return false
@@ -122,7 +109,7 @@ func (d *Dao) DeleteById(tableName string, data interface{}) bool {
 	return true
 }
 
-func parseWhereParam(db *gorm.DB, where []WhereParam) *gorm.DB {
+func parseWhereParam(db *gorm.DB, where []model.WhereParam) *gorm.DB {
 	if len(where) == 0 {
 		return db
 	}

@@ -3,15 +3,14 @@ package router
 import (
 	"net/http"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/moocss/go-webserver/src/model"
 	"github.com/moocss/go-webserver/src/pkg/version"
 	"github.com/moocss/go-webserver/src/router/middleware"
 	"github.com/moocss/go-webserver/src/service"
 
-	sdHandler "github.com/moocss/go-webserver/src/handler/api/sd"
-	userHandler "github.com/moocss/go-webserver/src/handler/api/user"
+	sdHandle "github.com/moocss/go-webserver/src/handler/api/sd"
+	"github.com/moocss/go-webserver/src/handler/api/users"
 )
 
 func rootHandler(c *gin.Context) {
@@ -39,12 +38,6 @@ func Load(s service.Service, middlewares ...gin.HandlerFunc) *gin.Engine {
 	// gin app
 	g := gin.New()
 
-	// CORS
-	corsConfig := cors.DefaultConfig()
-	corsConfig.AddAllowHeaders("Authorization")
-	// corsConfig.AllowOrigins = []string{"http://site.com"}
-	g.Use(cors.New(corsConfig))
-
 	// 使用中间件.
 	g.Use(gin.Logger())
 	g.Use(gin.Recovery())
@@ -64,25 +57,23 @@ func Load(s service.Service, middlewares ...gin.HandlerFunc) *gin.Engine {
 	// The health check handlers
 	svcd := g.Group("/sd")
 	{
-		svcd.GET("/health", sdHandler.HealthCheck)
-		svcd.GET("/disk", sdHandler.DiskCheck)
-		svcd.GET("/cpu", sdHandler.CPUCheck)
-		svcd.GET("/ram", sdHandler.RAMCheck)
+		svcd.GET("/health", sdHandle.HealthCheck)
+		svcd.GET("/disk", sdHandle.DiskCheck)
+		svcd.GET("/cpu", sdHandle.CPUCheck)
+		svcd.GET("/ram", sdHandle.RAMCheck)
 	}
 
 	// v1 group
-	v1Group := g.Group("/api/v1")
+	user := g.Group("/api/v1/user")
 	{
 		// authentication
-		v1Group.Use(middleware.Auth())
-		user := g.Group("/user")
-		{
-			user.POST("", func(context *gin.Context) {})
-			user.DELETE("/:id", func(context *gin.Context) {})
-			user.PUT("/:id", func(context *gin.Context) {})
-			user.GET("", func(context *gin.Context) {})
-			user.GET("/:username", userHandler.GetUser(s))
-		}
+		user.Use(middleware.Auth())
+		user.POST("", func(context *gin.Context) {})
+		user.DELETE("/:id", func(context *gin.Context) {})
+		user.PUT("/:id", func(context *gin.Context) {})
+		user.GET("", func(context *gin.Context) {})
+		user.GET("/:id", users.HandleFindById(s))
+			// user.GET("/:username", users.HandleFind(s))
 	}
 
 	// v2 group

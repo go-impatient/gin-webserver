@@ -16,7 +16,7 @@ type User struct {
 
 // TableName, 获取User表名称
 func (u *User) TableName() string {
-	return "user"
+	return "tb_user"
 }
 
 // UserFrom, 解析JSON字符串并返回一个 User 实例

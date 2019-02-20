@@ -1,7 +1,7 @@
 core:
   enabled: true                   # enabale httpd app
   mode: "dev"             		  # dev(debug), prod(release), test
-  name: "apiserver"               # API Server的名字
+  name: "webserver"               # API Server的名字
   host: ""                        # ip address to bind (default: any)
   port: "9090"                    # HTTP 绑定端口.
   max_ping_count: 2               # pingServer函数try的次数
@@ -16,13 +16,13 @@ core:
     host: ""                      # which domains the Let's Encrypt will attempt
 
 log:
-    console:
-      color: true
-      prefix: "[webserver]"
-      level: "debug"
-    zap:
-      path: "webserver-api.log"
-      level: "debug"
+  console:
+    color: true
+    prefix: "[webserver]"
+    level: "debug"
+  zap:
+    path: "webserver-api.log"
+    level: "debug"
 
 db:
   dialect: "mysql"                # "postgres" or "mysql"

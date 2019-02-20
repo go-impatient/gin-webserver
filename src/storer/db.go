@@ -19,48 +19,67 @@ var Models = []interface{}{
 	&model.User{},
 }
 
-type Database struct {
+type DB struct {
 	Self *gorm.DB
 	cfg  *config.ConfigDb
 }
 
-func NewDatabase(cfg *config.ConfigDb) *Database {
-	return &Database{
+func NewDB(cfg *config.ConfigDb) *DB {
+	return &DB{
 		cfg: cfg,
 	}
 }
 
-func (d *Database) Open() error {
+func (d *DB) Open() error {
 	g, err := gorm.Open(d.cfg.Dialect, d.parseConnConfig())
 	if err != nil {
-		log.Errorf("Database connection failed.", err)
+		log.Errorf("Database connection failed: [%s]", err)
 		return err
 	}
 
-	// set for db connection
+	// 数据库调优
 	g.DB().SetMaxOpenConns(d.cfg.MaxOpenConns) // 用于设置最大打开的连接数，默认值为0表示不限制.设置最大的连接数，可以避免并发太高导致连接mysql出现too many connections的错误。
 	g.DB().SetMaxIdleConns(d.cfg.MaxIdleConns) // 用于设置闲置的连接数.设置闲置的连接数则当开启的一个连接使用完成后可以放在池里等候下一次使用。
 	g.DB().SetConnMaxLifetime(time.Second * time.Duration(d.cfg.ConnMaxLifeTime))
 	g.LogMode(true)
 
+	// 数据库心跳测试
+	if err := d.pingDatabase(g);err != nil {
+		return err
+	}
+
+	// 初始化数据库对象
 	d.Self = g
 
 	return nil
 }
 
-func (d *Database) Close() {
+func (d *DB) Close() {
 	err := d.Self.Close()
 	if err != nil {
-		log.Errorf("Disconnect from database failed: ", err)
+		log.Errorf("Disconnect from database failed: [%s]", err)
 	}
 }
 
-func (d *Database) GetTablePrefix() string {
+// helper function to ping the database with backoff to ensure
+// a connection can be established before we proceed with the
+func (d *DB) pingDatabase(g *gorm.DB)  (err error) {
+	for i := 0; i < 30; i++  {
+		err = g.DB().Ping()
+		if err == nil {
+			return
+		}
+		time.Sleep(time.Second)
+	}
+	return
+}
+
+func (d *DB) GetTablePrefix() string {
 	return d.cfg.TablePrefix
 }
 
 // migrate migrates database schemas ...
-func (d *Database) Migrate() error {
+func (d *DB) Migrate() error {
 	err := d.Self.AutoMigrate(Models...).Error
 	if err != nil {
 		return errors.Wrap(err, "auto migrate tables failed")
@@ -70,7 +89,7 @@ func (d *Database) Migrate() error {
 }
 
 // creates necessary database tables
-func (d *Database) CreateTables() error {
+func (d *DB) CreateTables() error {
 	for _, model := range Models {
 		if !d.Self.HasTable(model) {
 			err := d.Self.CreateTable(model).Error
@@ -96,7 +115,7 @@ func realDSN(driver, dbname, username, password, addr, charset string) string {
 	return connStr
 }
 
-func (d *Database) parseConnConfig() string {
+func (d *DB) parseConnConfig() string {
 	connHost := ""
 	switch d.cfg.Dialect {
 	case "mysql":
@@ -110,6 +129,6 @@ func (d *Database) parseConnConfig() string {
 	case "mssql":
 		connHost = fmt.Sprintf("%s:%s", d.cfg.Host, d.cfg.Port)
 	}
-	s := realDSN(d.cfg.Dialect, d.cfg.Username, d.cfg.Password, connHost, d.cfg.DbName, d.cfg.Charset)
+	s := realDSN(d.cfg.Dialect, d.cfg.DbName, d.cfg.Username, d.cfg.Password, connHost, d.cfg.Charset)
 	return s
 }
