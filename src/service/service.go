@@ -9,6 +9,7 @@ import (
 // TokenService interface
 type TokenService interface {
 	ShowToken(string) (*model.Token, error)
+	//FindToken(string) (*model.User, error)
 	//CreateToken(*model.Token) error
 	//DeleteToken(*model.Token) error
 	//ListTokensByUser(string) ([]*model.Token, error)
@@ -16,14 +17,14 @@ type TokenService interface {
 
 // UserService interface
 type UserService interface {
-	// ShowUserById(uint64) (*model.User, error)
-	ShowUser(string) (*model.User, error)
+	FindUserById(uint64) (*model.User, error)
+	FindUser(string) (*model.User, error)
 	//ShowUserByToken(string) (*model.User, error)
 	//CreateUser(*model.User) error
 	//UpdateUser(*model.User) error
 	DeleteUser(*model.User) error
 	//ChangeUserPassword(*model.User) error
-	//Login(string, string) (*model.User, bool, error)
+	//FindLogin(string, string) (*model.User, bool, error)
 	//ListUsers() ([]*model.User, error)
 }
 
@@ -34,14 +35,14 @@ type Service interface {
 }
 
 type defaultService struct{
-	d 	*dao.Dao
-	cfg *config.Config
+	dao 	*dao.Dao
+	cfg 	*config.Config
 }
 
 // New constructs a new service layer
 func New(cfg *config.Config) Service {
 	return &defaultService{
-		d: dao.New(cfg),
+		dao: dao.New(cfg),
 		cfg: cfg,
 	}
 }

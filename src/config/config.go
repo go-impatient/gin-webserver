@@ -12,8 +12,8 @@ import (
 var defaultConfig = []byte(`
 core:
   enabled: true                   # enabale httpd app
-  mode: "dev"             				# dev(debug), prod(release), test
-  name: "apiserver"               # API Server的名字
+  mode: "dev"             		  # dev(debug), prod(release), test
+  name: "webserver"               # API Server的名字
   host: ""                        # ip address to bind (default: any)
   port: "9090"                    # HTTP 绑定端口.
   max_ping_count: 2               # pingServer函数try的次数
@@ -37,12 +37,12 @@ log:
       level: "debug"
 
 db:
-  dialect: "mysql"
+  dialect: "mysql"                # "postgres" or "mysql"
   db_name: "db_apiserver"
   host: "127.0.0.1"
   port: "3306"
   username: "root"
-  password: "123456"
+  password: "root"
   charset: "utf8mb4"
   unix: ""
   table_prefix: ""
@@ -159,9 +159,9 @@ type (
 )
 
 // Init initializes config pkg.
-func Init(confPath string) (*Config, error) {
+func Init(filePath string) (*Config, error) {
 	// 初始化配置文件
-	cfg, err := LoadConfig(confPath)
+	cfg, err := LoadConfig(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -173,40 +173,40 @@ func Init(confPath string) (*Config, error) {
 }
 
 // 加载配置文件
-func LoadConfig(confPath string) (*Config, error) {
+func LoadConfig(filePath string) (*Config, error) {
+	if filePath != "" {
+		// 如果指定了配置文件路径，则解析指定的配置文件路径
+		viper.SetConfigFile(filePath)
+	} else {
+		// 如果没有指定配置文件，则解析默认的配置文件
+		// Search config in home directory with name ".webserver" (without extension).
+		viper.AddConfigPath("/etc/webserver/")
+		viper.AddConfigPath("$HOME/.webserver/")
+		viper.AddConfigPath("./")
+		viper.SetConfigName("config")
+	}
+
 	// 设置配置文件格式为YAML
 	viper.SetConfigType("yaml")
 
 	// 读取匹配的环境变量
 	viper.AutomaticEnv()
 
-	// 读取环境变量的前缀为bear
-	viper.SetEnvPrefix("bear")
+	// 读取环境变量的前缀为webserver, 会自动大写
+	viper.SetEnvPrefix("webserver")
 
 	replacer := strings.NewReplacer(".", "_")
 	viper.SetEnvKeyReplacer(replacer)
 
-	if confPath != "" {
-		// 如果指定了配置文件路径，则解析指定的配置文件路径
-		viper.SetConfigFile(confPath)
-	} else {
-		// 如果没有指定配置文件，则解析默认的配置文件
-		// Search config in home directory with name ".webserver" (without extension).
-		viper.AddConfigPath("/etc/webserver/")
-		viper.AddConfigPath("$HOME/.webserver")
-		viper.AddConfigPath(".")
-		viper.SetConfigName("config")
-	}
-
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
-		log.Errorf("解析配置文件失败: %s", viper.ConfigFileUsed())
+		log.Errorf("Using config file: %s [%s]", viper.ConfigFileUsed(), err)
 		return nil, err
 	} else {
 		// load default config
 		err := viper.ReadConfig(bytes.NewBuffer(defaultConfig))
 		if err != nil {
-			log.Errorf("读取默认配置失败: %s", err.Error())
+			log.Errorf("Reading config: %s", err)
 			return nil, err
 		}
 	}
@@ -247,6 +247,7 @@ func LoadConfig(confPath string) (*Config, error) {
 			Host:            viper.GetString("db.host"),
 			Port:            viper.GetString("db.port"),
 			Charset:         viper.GetString("db.charset"),
+			Dialect:				 viper.GetString("db.dialect"),
 			DbName:          viper.GetString("db.db_name"),
 			Username:        viper.GetString("db.username"),
 			Password:        viper.GetString("db.password"),

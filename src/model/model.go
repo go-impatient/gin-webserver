@@ -12,6 +12,20 @@ type Base struct {
 	DeletedAt *time.Time `gorm:"column:deletedAt" sql:"index" json:"deletedAt"`
 }
 
+type WhereParam struct {
+	Field   string
+	Tag     string
+	Prepare interface{}
+}
+
+type QueryParam struct {
+	Fields string
+	Offset int
+	Limit  int
+	Order  string
+	Where  []WhereParam
+}
+
 // 将数据序列化为JSON字符串
 func JsonMarshal(v interface{}) (str string) {
 	res, err := json.Marshal(v)

@@ -8,11 +8,11 @@ import(
 
 type Dao struct {
 	orm 	*gorm.DB
-	db *storer.Database
+	db 		*storer.DB
 }
 
 func New(cfg *config.Config) *Dao {
-	DbInstance := storer.NewDatabase(cfg.Db)
+	DbInstance := storer.NewDB(cfg.Db)
 	if err := DbInstance.Open(); err != nil {
 		panic(err)
 	}
@@ -21,8 +21,6 @@ func New(cfg *config.Config) *Dao {
 		db: DbInstance,
 		orm: DbInstance.Self,
 	}
-
-	defer DbInstance.Close()
 
 	return d
 }

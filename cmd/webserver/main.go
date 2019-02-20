@@ -44,14 +44,6 @@ var flags = []cli.Flag{
 	},
 }
 
-var commands = []cli.Command{
-	{
-		Name:   "ping",
-		Usage:  "ping the agent",
-		Action: pinger,
-	},
-}
-
 func start(c *cli.Context) error {
 	var (
 		g errgroup.Group
@@ -106,10 +98,9 @@ func run() {
 	app := cli.NewApp()
 	app.Name = "webserver"
 	app.Version = version.Info.String() // version.Version.String()
-	app.Usage = "go web app"
+	app.Usage = "一个Golang接口服务器"
 	app.UsageText = usageStr
 	app.Action = start
-	app.Commands = commands
 	app.Flags = flags
 	app.Before = func(c *cli.Context) error {
 		fmt.Fprintf(c.App.Writer, "brace for impact\n")

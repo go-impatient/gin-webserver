@@ -24,27 +24,27 @@ gotool() {
 build_all() {
     gotool
      # linux
-    GOOS=linux  GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-w -X ${version_repo}.VersionDev=build.${build_numbar} -X ${versionDir}.VersionDate=$( date +%Y%m%d%H%M%S )" -v -a -installsuffix cgo -o release/webserver_linux
+    GOOS=linux  GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-w -X ${version_repo}.VersionDev=build.${build_numbar} -X ${versionDir}.VersionDate=$(date +%Y%m%d%H%M%S)" -v -a -installsuffix cgo -o release/webserver_linux
     # darwin:
-    GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-w -X ${version_repo}.VersionDev=build.${build_numbar} -X ${versionDir}.VersionDate=$( date +%Y%m%d%H%M%S )" -v -a -installsuffix cgo -o release/webserver
+    GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-w -X ${version_repo}.VersionDev=build.${build_numbar} -X ${versionDir}.VersionDate=$(date +%Y%m%d%H%M%S)" -v -a -installsuffix cgo -o release/webserver
     # windows
-    GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-w -X ${version_repo}.VersionDev=build.${build_numbar} -X ${versionDir}.VersionDate=$( date +%Y%m%d%H%M%S )" -v -a -installsuffix cgo -o release/webserver.exe
+    GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-w -X ${version_repo}.VersionDev=build.${build_numbar} -X ${versionDir}.VersionDate=$(date +%Y%m%d%H%M%S)" -v -a -installsuffix cgo -o release/webserver.exe
 }
 
 build() {
     gotool
-    go build -v -ldflags "-w -X ${version_repo}.VersionDev=build.${build_numbar} -X ${versionDir}.VersionDate=$( date +%Y%m%d%H%M%S )" -o release/webserver
+    go build -v -ldflags "-w -X ${version_repo}.VersionDev=build.${build_numbar} -X ${versionDir}.VersionDate=$(date +%Y%m%d%H%M%S)" -o release/webserver
 }
 
 dev_server() {
     cd $GOPATH/src/${build_repo}
-    go run -dev
+    go run main.go
 }
 
 build_server() {
     # go get ${build_repo}
     cd $GOPATH/src/${build_repo}
-    build_all
+    build
 }   
 
 install_server() {
@@ -52,8 +52,8 @@ install_server() {
     cd ${install_path}
     mkdir bin log etc
     cp $GOPATH/src/${build_repo}/release/webserver ./bin/
-    cp $GOPATH/src/${build_repo}/release/webserver_linux ./bin/
-    cp $GOPATH/src/${build_repo}/release/webserver.exe ./bin/
+#    cp $GOPATH/src/${build_repo}/release/webserver_linux ./bin/
+#    cp $GOPATH/src/${build_repo}/release/webserver.exe ./bin/
     cp $GOPATH/src/${server_repo}/src/config.yaml ./etc/config.yaml
     cp -r $GOPATH/src/${server_repo}/client ./client
 }
