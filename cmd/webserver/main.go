@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/moocss/go-webserver/src/dao"
 	"os"
 
 	"github.com/urfave/cli"
@@ -66,11 +67,14 @@ func start(c *cli.Context) error {
 		cfg.Core.Mode = "prod"
 	}
 
-	// 创建业务数据操作服务
-	svc := service.New(cfg)
+	// 创建数据库业务相关处理
+	dao := dao.New(cfg)
+
+	// 创建封装好的业务服务
+	svc := service.New(cfg, dao)
 
 	// 创建后台服务
-	app := app.New(cfg, svc)
+	app := app.New(cfg, dao, svc)
 
 	// 初始化日志服务
 	app.InitLog()

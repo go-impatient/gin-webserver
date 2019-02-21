@@ -45,7 +45,7 @@ db:
   password: "root"
   charset: "utf8mb4"
   unix: ""
-  table_prefix: ""
+  table_prefix: "tb_"
   max_idle_conns: ""
   max_open_conns: ""
   conn_max_lift_time: ""
@@ -69,6 +69,8 @@ cache:
 `)
 
 type (
+
+	// Config 配置对象
 	Config struct {
 		Core  *ConfigCore  `yaml:"core"`
 		Log   *ConfigLog   `yaml:"log"`
@@ -76,7 +78,7 @@ type (
 		Mail  *ConfigMail  `yaml:"mail"`
 		Cache *ConfigCache `yaml:"cache"`
 	}
-	// ConfigCore is sub section of config.
+	// ConfigCore ...
 	ConfigCore struct {
 		Enabled      bool           `yaml:"enabled"`
 		Mode         string         `yaml:"mode"`
@@ -143,12 +145,14 @@ type (
 		Password string `yaml:"smtp_password"`
 	}
 
+	// ConfigCache is sub section of config
 	ConfigCache struct {
 		Type    string            `yaml:"type"`
 		Timeout int32             `yaml:"timeout"`
 		Redis   *ConfigCacheRedis `yaml:"redis"`
 	}
 
+	// ConfigCacheRedis is sub section of config
 	ConfigCacheRedis struct {
 		Host      string `yaml:"host"`
 		Port      int    `yaml:"port"`
@@ -172,7 +176,7 @@ func Init(filePath string) (*Config, error) {
 	return cfg, nil
 }
 
-// 加载配置文件
+// LoadConfig 加载配置文件
 func LoadConfig(filePath string) (*Config, error) {
 	if filePath != "" {
 		// 如果指定了配置文件路径，则解析指定的配置文件路径
@@ -202,13 +206,13 @@ func LoadConfig(filePath string) (*Config, error) {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Errorf("Using config file: %s [%s]", viper.ConfigFileUsed(), err)
 		return nil, err
-	} else {
-		// load default config
-		err := viper.ReadConfig(bytes.NewBuffer(defaultConfig))
-		if err != nil {
-			log.Errorf("Reading config: %s", err)
-			return nil, err
-		}
+	}
+
+	// load default config
+	err := viper.ReadConfig(bytes.NewBuffer(defaultConfig))
+	if err != nil {
+		log.Errorf("Reading config: %s", err)
+		return nil, err
 	}
 
 	cfg := &Config{
@@ -247,7 +251,7 @@ func LoadConfig(filePath string) (*Config, error) {
 			Host:            viper.GetString("db.host"),
 			Port:            viper.GetString("db.port"),
 			Charset:         viper.GetString("db.charset"),
-			Dialect:				 viper.GetString("db.dialect"),
+			Dialect:         viper.GetString("db.dialect"),
 			DbName:          viper.GetString("db.db_name"),
 			Username:        viper.GetString("db.username"),
 			Password:        viper.GetString("db.password"),

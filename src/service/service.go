@@ -34,15 +34,15 @@ type Service interface {
 	UserService
 }
 
-type defaultService struct{
-	dao 	*dao.Dao
-	cfg 	*config.Config
+type defaultService struct {
+	dao *dao.Dao
+	cfg *config.Config
 }
 
 // New constructs a new service layer
-func New(cfg *config.Config) Service {
+func New(cfg *config.Config, dao *dao.Dao) Service {
 	return &defaultService{
-		dao: dao.New(cfg),
+		dao: dao,
 		cfg: cfg,
 	}
 }

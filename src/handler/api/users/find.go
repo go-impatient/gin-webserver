@@ -1,13 +1,15 @@
 package users
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/moocss/go-webserver/src/model"
 	"github.com/moocss/go-webserver/src/pkg/errno"
 	"github.com/moocss/go-webserver/src/service"
-	"strconv"
 )
 
+// HandleFind 控制器， 按照用户名查询
 func HandleFind(userService service.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username := c.Param("username")
@@ -23,6 +25,7 @@ func HandleFind(userService service.UserService) gin.HandlerFunc {
 	}
 }
 
+// HandleFindById 控制器， 按照用户ID查询
 func HandleFindById(userService service.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userId, _ := strconv.Atoi(c.Param("id"))

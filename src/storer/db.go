@@ -59,6 +59,7 @@ func (d *DB) Close() {
 	if err != nil {
 		log.Errorf("Disconnect from database failed: [%s]", err)
 	}
+	log.Info("Database closed")
 }
 
 // helper function to ping the database with backoff to ensure

@@ -33,7 +33,7 @@ db:
   password: "root"
   charset: "utf8mb4"
   unix: ""
-  table_prefix: ""
+  table_prefix: "tb_"
   max_idle_conns: ""
   max_open_conns: ""
   conn_max_lift_time: ""

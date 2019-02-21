@@ -16,6 +16,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/moocss/go-webserver/src/config"
+	"github.com/moocss/go-webserver/src/dao"
 	"github.com/moocss/go-webserver/src/pkg/log"
 	"github.com/moocss/go-webserver/src/router"
 	"github.com/moocss/go-webserver/src/router/middleware"
@@ -25,18 +26,21 @@ import (
 
 // App 项目
 type App struct {
-	config 		*config.Config
-	service		service.Service
+	config  *config.Config
+	dao     *dao.Dao
+	service service.Service
 }
 
-func New(cfg *config.Config, svc service.Service) *App {
+// New 实例化App
+func New(cfg *config.Config, dao *dao.Dao, svc service.Service) *App {
 	return &App{
-		config: cfg,
+		config:  cfg,
+		dao:     dao,
 		service: svc,
 	}
 }
 
-// Init initializes log pkg.
+// InitLog 初始化日志配置
 func (app *App) InitLog() {
 	wzap.SetDefaultDir("./log/")
 	logger := wzap.New(
@@ -95,7 +99,7 @@ func (app *App) autoTLSServer() error {
 			},
 			Handler: serve(app),
 		}
-		handleSignal(serve)
+		app.handleSignal(serve)
 		log.Info("Start to listening the incoming requests on https address")
 		return serve.ListenAndServeTLS("", "")
 	})
@@ -103,7 +107,7 @@ func (app *App) autoTLSServer() error {
 	return g.Wait()
 }
 
-func (app *App)defaultTLSServer() error {
+func (app *App) defaultTLSServer() error {
 	var g errgroup.Group
 	g.Go(func() error {
 		return http.ListenAndServe(":http", http.HandlerFunc(app.redirect))
@@ -116,7 +120,7 @@ func (app *App)defaultTLSServer() error {
 				NextProtos: []string{"http/1.1"}, // disable h2 because Safari :(
 			},
 		}
-		handleSignal(serve)
+		app.handleSignal(serve)
 		log.Infof("Start to listening the incoming requests on https address: %s", app.config.Core.TLS.Port)
 		return serve.ListenAndServeTLS(
 			app.config.Core.TLS.CertPath,
@@ -131,8 +135,7 @@ func (app *App) defaultServer() error {
 		Addr:    "0.0.0.0:" + app.config.Core.Port,
 		Handler: serve(app),
 	}
-
-	handleSignal(serve)
+	app.handleSignal(serve)
 	log.Infof("Start to listening the incoming requests on http address: %s", app.config.Core.Port)
 	return serve.ListenAndServe()
 }
@@ -167,6 +170,7 @@ func serve(app *App) *gin.Engine {
 	return handler
 }
 
+// setRuntimeMode 设置开发模式
 func setRuntimeMode(mode string) {
 	switch mode {
 	case "dev":
@@ -181,7 +185,7 @@ func setRuntimeMode(mode string) {
 }
 
 // handleSignal handles system signal for graceful shutdown.
-func handleSignal(server *http.Server) {
+func (app *App) handleSignal(server *http.Server) {
 	c := make(chan os.Signal)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
 
@@ -189,15 +193,18 @@ func handleSignal(server *http.Server) {
 		s := <-c
 		log.Infof("got signal [%s], exiting apiserver now", s)
 		if err := server.Close(); nil != err {
-			log.Error("app close failed ", err)
+			log.Errorf("server close failed: %s ", err)
 		}
 
-		log.Info("apiserver exited")
+		// 退出服务时，关闭数据库
+		app.dao.DB.Close()
+
+		log.Info("WebServer exited")
 		os.Exit(0)
 	}()
 }
 
-// PingServer
+// PingServer 服务心跳检查
 func (app *App) PingServer() (err error) {
 	maxPingConf := app.config.Core.MaxPingCount
 	for i := 0; i < maxPingConf; i++ {
@@ -212,5 +219,5 @@ func (app *App) PingServer() (err error) {
 		time.Sleep(time.Second)
 	}
 	err = errors.New("Cannot connect to the router.")
-	return err
+	return
 }
