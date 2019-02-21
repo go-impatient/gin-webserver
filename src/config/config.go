@@ -49,6 +49,7 @@ db:
   max_idle_conns: ""
   max_open_conns: ""
   conn_max_lift_time: ""
+	log_mode: true
 
 mail:
   enabled: true                    # 是否开启邮箱发送功能
@@ -134,6 +135,7 @@ type (
 		MaxIdleConns    int    `yaml:"max_idle_conns"`
 		MaxOpenConns    int    `yaml:"max_open_conns"`
 		ConnMaxLifeTime int    `yaml:"conn_max_lift_time"`
+		LogMode         bool   `yaml:"log_mode"`
 	}
 
 	// ConfigMail is sub section of config
@@ -259,6 +261,7 @@ func LoadConfig(filePath string) (*Config, error) {
 			MaxIdleConns:    viper.GetInt("db.max_idle_conns"),
 			MaxOpenConns:    viper.GetInt("db.max_open_conns"),
 			ConnMaxLifeTime: viper.GetInt("db.conn_max_lift_time"),
+			LogMode:         viper.GetBool("db.log_mode"),
 		},
 		Mail: &ConfigMail{
 			Enable:   viper.GetBool("mail.enable"),
