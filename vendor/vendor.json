@@ -14,6 +14,12 @@
 			"revisionTime": "2018-12-12T23:48:31Z"
 		},
 		{
+			"checksumSHA1": "5gnBrB9ISzgkQe5rLOlFp2MqA/8=",
+			"path": "github.com/asaskevich/govalidator",
+			"revision": "f9ffefc3facfbe0caee3fea233cbb6e8208f4541",
+			"revisionTime": "2018-07-20T11:50:03Z"
+		},
+		{
 			"checksumSHA1": "97BsbXOiZ8+Kr+LIuZkQFtSj7H4=",
 			"path": "github.com/coreos/go-semver/semver",
 			"revision": "e214231b295a8ea9479f11b70b35d5acf3556d9b",

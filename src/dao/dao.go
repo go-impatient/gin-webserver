@@ -7,14 +7,13 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/model"
-	"github.com/moocss/go-webserver/src/storer"
-
 	"github.com/moocss/go-webserver/src/pkg/log"
+	"github.com/moocss/go-webserver/src/storer"
 )
 
 // Dao 对象
 type Dao struct {
-	orm *gorm.DB
+	ORM *gorm.DB
 	DB  *storer.DB
 }
 
@@ -27,15 +26,25 @@ func New(cfg *config.Config) *Dao {
 
 	dao := &Dao{
 		DB:  DbInstance,
-		orm: DbInstance.Self,
+		ORM: DbInstance.Self,
 	}
 
 	return dao
 }
 
 // Create 数据添加
-func (d *Dao) Create(tableName string, data interface{}) bool {
-	db := d.orm.Table(d.setTableName(tableName)).Create(data)
+func (dao *Dao) Create(tableName string, data interface{}) bool {
+	//tx := dao.ORM.Begin()
+	//db := tx.Table(dao.setTableName(tableName)).Create(data)
+	//if err := db.Error; err != nil {
+	//	tx.Rollback()
+	//	log.Warn("mysql query error: %v, sql[%v]", err, db.QueryExpr())
+	//	return false
+	//}
+	//tx.Commit()
+	//return true
+
+	db := dao.ORM.Table(dao.setTableName(tableName)).Create(data)
 	if err := db.Error; err != nil {
 		log.Warn("mysql query error: %v, sql[%v]", err, db.QueryExpr())
 		return false
@@ -44,8 +53,8 @@ func (d *Dao) Create(tableName string, data interface{}) bool {
 }
 
 // FindMulti 数据复合查询
-func (d *Dao) FindMulti(tableName string, data interface{}, query *model.QueryParam) bool {
-	db := d.orm.Table(d.setTableName(tableName)).Offset(query.Offset)
+func (dao *Dao) FindMulti(tableName string, data interface{}, query *model.QueryParam) bool {
+	db := dao.ORM.Table(dao.setTableName(tableName)).Offset(query.Offset)
 	if query.Limit > 0 {
 		db = db.Limit(query.Limit)
 	}
@@ -65,8 +74,8 @@ func (d *Dao) FindMulti(tableName string, data interface{}, query *model.QueryPa
 }
 
 // Count 统计某条件字段的条目数
-func (d *Dao) Count(tableName string, count *int, query *model.QueryParam) bool {
-	db := d.orm.Table(d.setTableName(tableName))
+func (dao *Dao) Count(tableName string, count *int, query *model.QueryParam) bool {
+	db := dao.ORM.Table(dao.setTableName(tableName))
 	db = parseWhereParam(db, query.Where)
 	db = db.Count(count)
 	if err := db.Error; err != nil {
@@ -77,8 +86,8 @@ func (d *Dao) Count(tableName string, count *int, query *model.QueryParam) bool 
 }
 
 // FindOne 根据某一字段查询数据
-func (d *Dao) FindOne(tableName string, data interface{}, query *model.QueryParam) bool {
-	db := d.orm.Table(d.setTableName(tableName))
+func (dao *Dao) FindOne(tableName string, data interface{}, query *model.QueryParam) bool {
+	db := dao.ORM.Table(dao.setTableName(tableName))
 	if query.Fields != "" {
 		db = db.Select(query.Fields)
 	}
@@ -92,8 +101,8 @@ func (d *Dao) FindOne(tableName string, data interface{}, query *model.QueryPara
 }
 
 // FindById 根据ID查询数据
-func (d *Dao) FindById(tableName string, data interface{}, id interface{}) bool {
-	db := d.orm.Table(d.setTableName(tableName))
+func (dao *Dao) FindById(tableName string, data interface{}, id interface{}) bool {
+	db := dao.ORM.Table(dao.setTableName(tableName))
 	db.First(data, id)
 	if err := db.Error; err != nil && !db.RecordNotFound() {
 		log.Warn("mysql query error: %v, sql[%v]", err, db.QueryExpr())
@@ -103,8 +112,8 @@ func (d *Dao) FindById(tableName string, data interface{}, id interface{}) bool 
 }
 
 // Update 更新数据
-func (d *Dao) Update(tableName string, data interface{}, query *model.QueryParam) bool {
-	db := d.orm.Table(d.setTableName(tableName))
+func (dao *Dao) Update(tableName string, data interface{}, query *model.QueryParam) bool {
+	db := dao.ORM.Table(dao.setTableName(tableName))
 	db = parseWhereParam(db, query.Where)
 	db = db.Updates(data)
 	if err := db.Error; err != nil {
@@ -115,12 +124,12 @@ func (d *Dao) Update(tableName string, data interface{}, query *model.QueryParam
 }
 
 // Delete 删除数据
-func (d *Dao) Delete(tableName string, data interface{}, query *model.QueryParam) bool {
+func (dao *Dao) Delete(tableName string, data interface{}, query *model.QueryParam) bool {
 	if len(query.Where) == 0 {
 		log.Warn("mysql query error: delete failed, where conditions cannot be empty")
 		return false
 	}
-	db := d.orm.Table(d.setTableName(tableName))
+	db := dao.ORM.Table(dao.setTableName(tableName))
 	db = parseWhereParam(db, query.Where)
 	db = db.Delete(data)
 	if err := db.Error; err != nil {
@@ -131,8 +140,8 @@ func (d *Dao) Delete(tableName string, data interface{}, query *model.QueryParam
 }
 
 // DeleteById 更加ID删除数据
-func (d *Dao) DeleteById(tableName string, data interface{}) bool {
-	db := d.orm.Table(d.setTableName(tableName))
+func (dao *Dao) DeleteById(tableName string, data interface{}) bool {
+	db := dao.ORM.Table(dao.setTableName(tableName))
 	db.Delete(data)
 	if err := db.Error; err != nil {
 		log.Warn("mysql query error: %v, sql[%v]", err, db.QueryExpr())
@@ -169,9 +178,9 @@ func parseWhereParam(db *gorm.DB, where []model.WhereParam) *gorm.DB {
 }
 
 // setTableName 给数据表拼接前缀
-func (d *Dao) setTableName(rawName string) string {
+func (dao *Dao) setTableName(rawName string) string {
 	return strings.Join([]string{
-		d.DB.GetTablePrefix(),
+		dao.DB.GetTablePrefix(),
 		rawName,
 	}, "")
 }

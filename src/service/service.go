@@ -1,6 +1,8 @@
 package service
 
 import (
+	"sync"
+
 	"github.com/moocss/go-webserver/src/config"
 	"github.com/moocss/go-webserver/src/dao"
 	"github.com/moocss/go-webserver/src/model"
@@ -20,7 +22,7 @@ type UserService interface {
 	FindUserById(uint64) (*model.User, error)
 	FindUser(string) (*model.User, error)
 	//ShowUserByToken(string) (*model.User, error)
-	//CreateUser(*model.User) error
+	CreateUser(*model.User) error
 	//UpdateUser(*model.User) error
 	DeleteUser(*model.User) error
 	//ChangeUserPassword(*model.User) error
@@ -35,6 +37,7 @@ type Service interface {
 }
 
 type defaultService struct {
+	mtx *sync.Mutex
 	dao *dao.Dao
 	cfg *config.Config
 }
@@ -42,6 +45,7 @@ type defaultService struct {
 // New constructs a new service layer
 func New(cfg *config.Config, dao *dao.Dao) Service {
 	return &defaultService{
+		mtx: &sync.Mutex{},
 		dao: dao,
 		cfg: cfg,
 	}

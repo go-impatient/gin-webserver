@@ -6,10 +6,10 @@ import (
 )
 
 type Base struct {
-	ID        uint64     `gorm:"primary_key;AUTO_INCREMENT;column:id" json:"id"`
-	CreatedAt time.Time  `gorm:"column:createdAt" json:"createdAt"`
-	UpdatedAt time.Time  `gorm:"column:updatedAt" json:"updatedAt"`
-	DeletedAt *time.Time `gorm:"column:deletedAt" sql:"index" json:"deletedAt"`
+	ID        uint64     `gorm:"primary_key;AUTO_INCREMENT;column:id" json:"id" valid:"-"`
+	CreatedAt time.Time  `gorm:"column:createdAt" json:"createdAt" valid:"-"`
+	UpdatedAt time.Time  `gorm:"column:updatedAt" json:"updatedAt" valid:"-"`
+	DeletedAt *time.Time `gorm:"column:deletedAt" sql:"index" json:"deletedAt" valid:"-"`
 }
 
 type WhereParam struct {

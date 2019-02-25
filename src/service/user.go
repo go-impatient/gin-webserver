@@ -3,12 +3,16 @@ package service
 import (
 	"errors"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/moocss/go-webserver/src/model"
 )
 
 func (service *defaultService) FindUser(username string) (*model.User, error) {
-	if username == "" {
+	if govalidator.IsNull(username) {
 		return nil, errors.New("用户名不能为空")
+	}
+	if !govalidator.StringLength(username, "1", "255") {
+		return nil, errors.New("用户名不能超过1到255个字节")
 	}
 	detail, ok := service.dao.FindUserOne(&model.QueryParam{
 		Where: []model.WhereParam{
@@ -35,11 +39,16 @@ func (service *defaultService) FindUserById(id uint64) (*model.User, error) {
 }
 
 func (service *defaultService) UserDetail(id uint64) (*model.User, error) {
-	if id < 0 {
-		return nil, errors.New("用户ID不能为空")
+	if govalidator.IsInt(string(id)) {
+		return nil, errors.New("用户ID不是数字")
 	}
 
 	detail, ok := service.dao.FindUser(id)
+
+	if govalidator.IsNull(detail.Username) {
+		return nil, errors.New("用户不存在")
+	}
+
 	if !ok {
 		return nil, errors.New("获取用户详情数据失败")
 	}
@@ -49,6 +58,13 @@ func (service *defaultService) UserDetail(id uint64) (*model.User, error) {
 
 func (service *defaultService) DeleteUser(data *model.User) error {
 	panic("implement me")
+}
+
+func (service *defaultService) CreateUser(data *model.User) error {
+	//service.mtx.Lock()
+	//defer service.mtx.Unlock()
+
+	panic("")
 }
 
 //func CreateOrUpdate(data *user.User) error {

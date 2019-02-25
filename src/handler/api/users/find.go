@@ -29,7 +29,6 @@ func HandleFind(userService service.UserService) gin.HandlerFunc {
 func HandleFindById(userService service.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userId, _ := strconv.Atoi(c.Param("id"))
-
 		user, err := userService.FindUserById(uint64(userId))
 
 		if err != nil {

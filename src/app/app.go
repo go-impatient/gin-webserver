@@ -42,7 +42,7 @@ func New(cfg *config.Config, dao *dao.Dao, svc service.Service) *App {
 
 // InitLog 初始化日志配置
 func (app *App) InitLog() {
-	wzap.SetDefaultDir("./log/")
+	// wzap.SetDefaultDir("./log/")
 	logger := wzap.New(
 		wzap.WithOutput(
 			wzap.WithLevelCombo(app.config.Log.Zap.Level),

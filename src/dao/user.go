@@ -2,8 +2,6 @@ package dao
 
 import (
 	"github.com/moocss/go-webserver/src/model"
-	"github.com/moocss/go-webserver/src/pkg/auth"
-	validator "gopkg.in/go-playground/validator.v9"
 )
 
 // user 数据表
@@ -63,22 +61,4 @@ func (d *Dao) FindUserOne(query *model.QueryParam) (*model.User, bool) {
 	data := &model.User{}
 	ok := d.FindOne(TableName, &data, query)
 	return data, ok
-}
-
-// Compare with the plain text password.
-func (d *Dao) Compare(data *model.User, pwd string) (err error) {
-	err = auth.Compare(data.Password, pwd)
-	return
-}
-
-// Encrypt the user password.
-func (d *Dao) Encrypt(data *model.User) (err error) {
-	data.Password, err = auth.Encrypt(data.Password)
-	return
-}
-
-// Validate the fields.
-func (d *Dao) Validate(data *model.User) error {
-	validate := validator.New()
-	return validate.Struct(data)
 }
