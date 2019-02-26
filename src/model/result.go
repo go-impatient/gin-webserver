@@ -4,14 +4,14 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/moocss/go-webserver/src/pkg/errno"
+	"github.com/moocss/gin-webserver/src/pkg/errno"
 )
 
 // Result represents HTTP response body.
 type Result struct {
-	Code 			int         `json:"code"` // return code, 0 for succ
-	Message  	string      `json:"message"`  // message
-	Data 			interface{} `json:"data"` // data object
+	Code    int         `json:"code"`    // return code, 0 for succ
+	Message string      `json:"message"` // message
+	Data    interface{} `json:"data"`    // data object
 }
 
 // 输出返回结果

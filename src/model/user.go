@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/asaskevich/govalidator"
-	"github.com/moocss/go-webserver/src/pkg/auth"
+	"github.com/moocss/gin-webserver/src/pkg/auth"
 )
 
 // 创建一个User数据模型

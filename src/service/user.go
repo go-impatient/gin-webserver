@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/asaskevich/govalidator"
-	"github.com/moocss/go-webserver/src/model"
+	"github.com/moocss/gin-webserver/src/model"
 )
 
 func (service *defaultService) FindUser(username string) (*model.User, error) {

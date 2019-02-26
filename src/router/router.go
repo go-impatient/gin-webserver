@@ -4,13 +4,13 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/moocss/go-webserver/src/model"
-	"github.com/moocss/go-webserver/src/pkg/version"
-	"github.com/moocss/go-webserver/src/router/middleware"
-	"github.com/moocss/go-webserver/src/service"
+	"github.com/moocss/gin-webserver/src/model"
+	"github.com/moocss/gin-webserver/src/pkg/version"
+	"github.com/moocss/gin-webserver/src/router/middleware"
+	"github.com/moocss/gin-webserver/src/service"
 
-	sdHandle "github.com/moocss/go-webserver/src/handler/api/sd"
-	"github.com/moocss/go-webserver/src/handler/api/users"
+	sdHandle "github.com/moocss/gin-webserver/src/handler/api/sd"
+	"github.com/moocss/gin-webserver/src/handler/api/users"
 )
 
 func rootHandler(c *gin.Context) {
@@ -73,7 +73,7 @@ func Load(s service.Service, middlewares ...gin.HandlerFunc) *gin.Engine {
 		user.PUT("/:id", func(context *gin.Context) {})
 		user.GET("", func(context *gin.Context) {})
 		user.GET("/:id", users.HandleFindById(s))
-			// user.GET("/:username", users.HandleFind(s))
+		// user.GET("/:username", users.HandleFind(s))
 	}
 
 	// v2 group

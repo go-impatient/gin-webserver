@@ -1,8 +1,8 @@
 #!/bin/bash
 build_numbar="0.1.0"
-server_repo="github.com/moocss/go-webserver"
-build_repo="github.com/moocss/go-webserver/cmd/webserver"
-version_repo="github.com/moocss/go-webserver/src/pkg/version"
+server_repo="github.com/moocss/gin-webserver"
+build_repo="github.com/moocss/gin-webserver/cmd/webserver"
+version_repo="github.com/moocss/gin-webserver/src/pkg/version"
 
 install_path=$( cd `dirname $0`; pwd )/server-deploy
 

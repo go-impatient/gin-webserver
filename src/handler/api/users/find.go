@@ -1,13 +1,13 @@
 package users
 
 import (
-	"github.com/moocss/go-webserver/src/pkg/log"
+	"github.com/moocss/gin-webserver/src/pkg/log"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/moocss/go-webserver/src/model"
-	"github.com/moocss/go-webserver/src/pkg/errno"
-	"github.com/moocss/go-webserver/src/service"
+	"github.com/moocss/gin-webserver/src/model"
+	"github.com/moocss/gin-webserver/src/pkg/errno"
+	"github.com/moocss/gin-webserver/src/service"
 )
 
 // HandleFind 控制器， 按照用户名查询

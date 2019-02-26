@@ -24,4 +24,3 @@ func SendError(c *gin.Context) {
 		ErrorDescription: "page not found",
 	})
 }
-

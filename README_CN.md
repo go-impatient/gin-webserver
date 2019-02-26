@@ -45,7 +45,7 @@
 
 ### 普通编译运行
 ```bash
-cd $GOPATH/src/github.com/moocss/go-webserver
+cd $GOPATH/src/github.com/moocss/gin-webserver
 gofmt -w .
 go tool vet .
 go build -v .
@@ -53,7 +53,7 @@ go build -v .
 ```
 ### 源码交叉编译并安装
 ```bash
-bash $GOPATH/src/github.com/moocss/go-webserver/install.sh
+bash $GOPATH/src/github.com/moocss/gin-webserver/install.sh
 ```
 
 ### Go 依赖

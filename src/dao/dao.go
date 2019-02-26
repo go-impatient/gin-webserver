@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
-	"github.com/moocss/go-webserver/src/config"
-	"github.com/moocss/go-webserver/src/model"
-	"github.com/moocss/go-webserver/src/pkg/log"
-	"github.com/moocss/go-webserver/src/storer"
+	"github.com/moocss/gin-webserver/src/config"
+	"github.com/moocss/gin-webserver/src/model"
+	"github.com/moocss/gin-webserver/src/pkg/log"
+	"github.com/moocss/gin-webserver/src/storer"
 )
 
 // Dao 对象

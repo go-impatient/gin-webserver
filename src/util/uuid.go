@@ -1,8 +1,8 @@
 package util
 
 import (
-	"strings"
 	"github.com/satori/go.uuid"
+	"strings"
 )
 
 const DASH = "-"

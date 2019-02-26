@@ -3,9 +3,9 @@ package service
 import (
 	"sync"
 
-	"github.com/moocss/go-webserver/src/config"
-	"github.com/moocss/go-webserver/src/dao"
-	"github.com/moocss/go-webserver/src/model"
+	"github.com/moocss/gin-webserver/src/config"
+	"github.com/moocss/gin-webserver/src/dao"
+	"github.com/moocss/gin-webserver/src/model"
 )
 
 // TokenService interface

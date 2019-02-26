@@ -2,7 +2,7 @@ package user
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/moocss/go-webserver/src/service"
+	"github.com/moocss/gin-webserver/src/service"
 )
 
 func HandleFindUser(userService service.UserService) gin.HandlerFunc {
@@ -10,4 +10,3 @@ func HandleFindUser(userService service.UserService) gin.HandlerFunc {
 
 	}
 }
-

@@ -8,11 +8,11 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mssql"    // enable the mssql dialect
 	_ "github.com/jinzhu/gorm/dialects/mysql"    // enable the mysql dialect
 	_ "github.com/jinzhu/gorm/dialects/postgres" // enable the postgres dialect
-	"github.com/moocss/go-webserver/src/config"
-	"github.com/moocss/go-webserver/src/pkg/log"
+	"github.com/moocss/gin-webserver/src/config"
+	"github.com/moocss/gin-webserver/src/pkg/log"
 	"github.com/pkg/errors"
 
-	"github.com/moocss/go-webserver/src/model"
+	"github.com/moocss/gin-webserver/src/model"
 )
 
 var Models = []interface{}{

@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gopkg.in/go-playground/validator.v9"
 
-	"github.com/moocss/go-webserver/src/model"
+	"github.com/moocss/gin-webserver/src/model"
 )
 
 // Handler creates a gin middleware for handling errors.

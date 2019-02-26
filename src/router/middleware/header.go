@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/moocss/go-webserver/src/pkg/version"
+	"github.com/moocss/gin-webserver/src/pkg/version"
 )
 
 // NoCache is a middleware function that appends headers

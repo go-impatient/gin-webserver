@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/moocss/go-webserver/src/pkg/log"
+	"github.com/moocss/gin-webserver/src/pkg/log"
 	"github.com/spf13/viper"
 )
 
@@ -109,9 +109,9 @@ type (
 
 	// ConfigLog is sub section of config.
 	ConfigLog struct {
-		DefaultDir string					`yaml:"default_dir"`
-		Console *ConfigLogConsole `yaml:"console"`
-		Zap     *ConfigLogZap     `yaml:"zap"`
+		DefaultDir string            `yaml:"default_dir"`
+		Console    *ConfigLogConsole `yaml:"console"`
+		Zap        *ConfigLogZap     `yaml:"zap"`
 	}
 	ConfigLogConsole struct {
 		Color  bool   `yaml:"color"`
@@ -137,7 +137,7 @@ type (
 		MaxIdleConns    int    `yaml:"max_idle_conns"`
 		MaxOpenConns    int    `yaml:"max_open_conns"`
 		ConnMaxLifeTime int    `yaml:"conn_max_lift_time"`
-		LogMode					bool	 `yaml:"log_mode"`
+		LogMode         bool   `yaml:"log_mode"`
 	}
 
 	// ConfigMail is sub section of config
@@ -264,7 +264,7 @@ func LoadConfig(filePath string) (*Config, error) {
 			MaxIdleConns:    viper.GetInt("db.max_idle_conns"),
 			MaxOpenConns:    viper.GetInt("db.max_open_conns"),
 			ConnMaxLifeTime: viper.GetInt("db.conn_max_lift_time"),
-			LogMode:				 viper.GetBool("db.log_mode"),
+			LogMode:         viper.GetBool("db.log_mode"),
 		},
 		Mail: &ConfigMail{
 			Enable:   viper.GetBool("mail.enable"),

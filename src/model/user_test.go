@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUser(t *testing.T)  {
+func TestUser(t *testing.T) {
 	assert := assert.New(t)
 	user := &User{
 		Username: "test",

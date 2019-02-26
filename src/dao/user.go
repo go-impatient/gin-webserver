@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"github.com/moocss/go-webserver/src/model"
+	"github.com/moocss/gin-webserver/src/model"
 )
 
 // user 数据表

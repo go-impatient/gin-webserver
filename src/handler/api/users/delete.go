@@ -4,9 +4,9 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/moocss/go-webserver/src/model"
-	"github.com/moocss/go-webserver/src/pkg/errno"
-	"github.com/moocss/go-webserver/src/service"
+	"github.com/moocss/gin-webserver/src/model"
+	"github.com/moocss/gin-webserver/src/pkg/errno"
+	"github.com/moocss/gin-webserver/src/service"
 )
 
 func HandleDelete(userService service.UserService) gin.HandlerFunc {

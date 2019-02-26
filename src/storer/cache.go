@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-redis/redis"
-	"github.com/moocss/go-webserver/src/config"
-	"github.com/patrickmn/go-cache"
 	"bytes"
 	"encoding/json"
+	"github.com/go-redis/redis"
+	"github.com/moocss/gin-webserver/src/config"
+	"github.com/patrickmn/go-cache"
 )
 
 //CacheStore represents the cache store
@@ -55,22 +55,22 @@ func InitCacheStore(cfg *config.ConfigCache) *CacheStore {
 // Set stores
 func (c *CacheStore) Set(key string, data string) error {
 	switch c.Type {
-		case typeLocal:
-			c.gocache.Set(key, data, cache.DefaultExpiration)
-		case typeRedis:
-			op := &bytes.Buffer{}
-			enc := json.NewEncoder(op)
-			enc.SetEscapeHTML(false)
-			err := enc.Encode(data)
-			if err != nil {
-				return err
-			}
-			err = c.redis.SetNX(key, string(op.Bytes()), c.DefaultTimeout).Err()
-			if err != nil {
-				return err
-			}
-		case typeNone:
-		default:
+	case typeLocal:
+		c.gocache.Set(key, data, cache.DefaultExpiration)
+	case typeRedis:
+		op := &bytes.Buffer{}
+		enc := json.NewEncoder(op)
+		enc.SetEscapeHTML(false)
+		err := enc.Encode(data)
+		if err != nil {
+			return err
+		}
+		err = c.redis.SetNX(key, string(op.Bytes()), c.DefaultTimeout).Err()
+		if err != nil {
+			return err
+		}
+	case typeNone:
+	default:
 	}
 	return nil
 }
@@ -78,25 +78,24 @@ func (c *CacheStore) Set(key string, data string) error {
 // Get gets
 func (c *CacheStore) Get(key string) (string, error) {
 	switch c.Type {
-		case typeLocal:
-			if x, found := c.gocache.Get(key); found {
-				foo := x.(string)
-				return foo, nil
-			}
+	case typeLocal:
+		if x, found := c.gocache.Get(key); found {
+			foo := x.(string)
+			return foo, nil
+		}
+		return "", nil
+	case typeRedis:
+		val, err := c.redis.Get(key).Result()
+		if err == redis.Nil {
 			return "", nil
-		case typeRedis:
-			val, err := c.redis.Get(key).Result()
-			if err == redis.Nil {
-				return "", nil
-			} else if err != nil {
-				return "", err
-			} else {
-				return val, nil
-			}
-		case typeNone:
-			return "", nil
-		default:
-			return "", nil
+		} else if err != nil {
+			return "", err
+		} else {
+			return val, nil
+		}
+	case typeNone:
+		return "", nil
+	default:
+		return "", nil
 	}
 }
-

@@ -15,13 +15,13 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/moocss/go-webserver/src/config"
-	"github.com/moocss/go-webserver/src/dao"
-	"github.com/moocss/go-webserver/src/pkg/log"
-	"github.com/moocss/go-webserver/src/router"
-	"github.com/moocss/go-webserver/src/router/middleware"
-	"github.com/moocss/go-webserver/src/service"
-	"github.com/moocss/go-webserver/src/util"
+	"github.com/moocss/gin-webserver/src/config"
+	"github.com/moocss/gin-webserver/src/dao"
+	"github.com/moocss/gin-webserver/src/pkg/log"
+	"github.com/moocss/gin-webserver/src/router"
+	"github.com/moocss/gin-webserver/src/router/middleware"
+	"github.com/moocss/gin-webserver/src/service"
+	"github.com/moocss/gin-webserver/src/util"
 )
 
 // App 项目

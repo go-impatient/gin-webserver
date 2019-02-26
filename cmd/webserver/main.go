@@ -2,17 +2,17 @@ package main
 
 import (
 	"fmt"
-	"github.com/moocss/go-webserver/src/dao"
 	"os"
 
 	"github.com/urfave/cli"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/moocss/go-webserver/src/app"
-	"github.com/moocss/go-webserver/src/config"
-	"github.com/moocss/go-webserver/src/pkg/log"
-	"github.com/moocss/go-webserver/src/pkg/version"
-	"github.com/moocss/go-webserver/src/service"
+	"github.com/moocss/gin-webserver/src/app"
+	"github.com/moocss/gin-webserver/src/config"
+	"github.com/moocss/gin-webserver/src/dao"
+	"github.com/moocss/gin-webserver/src/pkg/log"
+	"github.com/moocss/gin-webserver/src/pkg/version"
+	"github.com/moocss/gin-webserver/src/service"
 )
 
 var usageStr = `

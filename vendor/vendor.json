@@ -666,5 +666,5 @@
 			"revision": ""
 		}
 	],
-	"rootPath": "github.com/moocss/go-webserver"
+	"rootPath": "github.com/moocss/gin-webserver"
 }
