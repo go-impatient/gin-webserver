@@ -1,0 +1,58 @@
+core:
+  enabled: true                   # enabale httpd app
+  mode: "dev"             		  # dev(debug), prod(release), test
+  name: "webserver"               # API Server的名字
+  host: ""                        # ip address to bind (default: any)
+  port: "9090"                    # HTTP 绑定端口.
+  max_ping_count: 2               # pingServer函数try的次数
+  jwt_secret: "Rtg8BPKNEf2mB4mgvKONGPZZQSaJWNLijxR42qRgq0iBb5"
+  tls:
+    port: "9098"
+    cert_path: ""                 # src/config/app.crt
+    key_path: ""                  # src/config/app.key
+  auto_tls:
+    enabled: false                # Automatically install TLS certificates from Let's Encrypt.
+    folder: ".cache"              # folder for storing TLS certificates
+    host: ""                      # which domains the Let's Encrypt will attempt
+
+log:
+  default_dir: "./../log/"         # 设置默认输出目录
+  console:
+    color: true
+    prefix: "[WEBSERVER]"
+    level: "Debug|Info|Warn|Error"
+  zap:
+    path: "./webserver-api.log"
+    level: "Debug"
+
+db:
+  dialect: "mysql"                # "postgres" or "mysql"
+  db_name: "db_apiserver"
+  host: "127.0.0.1"
+  port: "3306"
+  username: "root"
+  password: "root"
+  charset: "utf8mb4"
+  unix: ""
+  table_prefix: "tb_"
+  max_idle_conns: ""
+  max_open_conns: ""
+  conn_max_lift_time: ""
+  log_mode: true
+
+mail:
+  enabled: true                    # 是否开启邮箱发送功能
+  smtp_host: "smtp.exmail.qq.com"  # 邮件smtp地址
+  smtp_port: 465
+  smtp_username: "moocss@163.com"
+  smtp_password: ""
+
+cache:
+  type: "none"
+  timeout: 60
+  redis:
+    host: "localhost"
+    port: 6379
+    password: ""
+    db: 0
+    keyprefix: "__:::webserver:"

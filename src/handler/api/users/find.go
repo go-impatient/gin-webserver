@@ -1,6 +1,7 @@
 package users
 
 import (
+	"github.com/moocss/go-webserver/src/pkg/log"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -29,6 +30,9 @@ func HandleFind(userService service.UserService) gin.HandlerFunc {
 func HandleFindById(userService service.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userId, _ := strconv.Atoi(c.Param("id"))
+
+		log.Debugf("用户ID: %s", userId)
+
 		user, err := userService.FindUserById(uint64(userId))
 
 		if err != nil {

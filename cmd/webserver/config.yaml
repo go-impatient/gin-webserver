@@ -16,13 +16,14 @@ core:
     host: ""                      # which domains the Let's Encrypt will attempt
 
 log:
+    default_dir: "./../log/"         # 设置默认输出目录
     console:
       color: true
-      prefix: "[webserver]"
-      level: "debug"
+      prefix: "[WEBSERVER]"
+      level: "Debug|Info|Warn|Error"
     zap:
-      path: "webserver-api.log"
-      level: "debug"
+      path: "./webserver-api.log"
+      level: "Debug"
 
 db:
   dialect: "mysql"                # "postgres" or "mysql"
@@ -37,6 +38,7 @@ db:
   max_idle_conns: ""
   max_open_conns: ""
   conn_max_lift_time: ""
+  log_mode: true
 
 mail:
   enabled: true                    # 是否开启邮箱发送功能

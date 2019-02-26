@@ -59,6 +59,7 @@ func (suite *ConfigTestSuite) TestValidateConfDefault() {
 	assert.Equal(suite.T(), "3306", suite.ConfDefault.Db.Port)
 	assert.Equal(suite.T(), "root", suite.ConfDefault.Db.Username)
 	assert.Equal(suite.T(), "root", suite.ConfDefault.Db.Password)
+	assert.Equal(suite.T(), true, suite.ConfDefault.Db.LogMode)
 
 	// Mail
 	assert.Equal(suite.T(), false, suite.ConfDefault.Mail.Enable)
@@ -82,6 +83,7 @@ func (suite *ConfigTestSuite) TestValidateConf() {
 	assert.Equal(suite.T(), "", suite.Conf.Core.TLS.KeyPath)
 
 	// Log
+	assert.Equal(suite.T(), "./log/", suite.Conf.Log.DefaultDir)
 	assert.Equal(suite.T(), true, suite.Conf.Log.Console.Color)
 	assert.Equal(suite.T(), "[webserver]", suite.Conf.Log.Console.Prefix)
 	assert.Equal(suite.T(), "debug", suite.Conf.Log.Console.Level)
@@ -94,6 +96,7 @@ func (suite *ConfigTestSuite) TestValidateConf() {
 	assert.Equal(suite.T(), "3306", suite.Conf.Db.Port)
 	assert.Equal(suite.T(), "root", suite.Conf.Db.Username)
 	assert.Equal(suite.T(), "root", suite.Conf.Db.Password)
+	assert.Equal(suite.T(), true, suite.Conf.Db.LogMode)
 
 	// Mail
 	assert.Equal(suite.T(), false, suite.Conf.Mail.Enable)

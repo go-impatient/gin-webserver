@@ -48,7 +48,7 @@ func (d *DB) Open() error {
 	g.DB().SetConnMaxLifetime(time.Second * time.Duration(d.cfg.ConnMaxLifeTime))
 
 	// 是否开启日志
-	g.LogMode(true)
+	g.LogMode(d.cfg.LogMode)
 
 	// 初始化数据库对象
 	d.Self = g

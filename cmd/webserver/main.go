@@ -21,15 +21,7 @@ __  _  __ ____\_ |__   ______ ______________  __ ___________
 \ \/ \/ // __ \| __ \ /  ___// __ \_  __ \  \/ // __ \_  __ \
  \     /\  ___/| \_\ \\___ \\  ___/|  | \/\   /\  ___/|  | \/
   \/\_/  \___  >___  /____  >\___  >__|    \_/  \___  >__|   
-             \/    \/     \/     \/                 \/      
-Usage: webserver [options]
-Server Options:
-	-c, --config <file>              Configuration file path
-	-a, --address <address>          Address to bind (default: any)
-	-p, --port <port>                Use port for clients (default: 9090)
-Common Options:
-	-h, --help                       Show this message
-	-v, --version                    Show version
+             \/    \/     \/     \/                 \/
 `
 
 var flags = []cli.Flag{
@@ -46,9 +38,7 @@ var flags = []cli.Flag{
 }
 
 func start(c *cli.Context) error {
-	var (
-		g errgroup.Group
-	)
+	var g errgroup.Group
 
 	// 设置默认配置
 	cfg, err := config.Init(c.String("c"))
@@ -58,12 +48,8 @@ func start(c *cli.Context) error {
 	}
 
 	if c.Bool("debug") {
-		cfg.Log.Console.Level = "debug"
-		cfg.Log.Zap.Level = "debug"
 		cfg.Core.Mode = "dev"
 	} else {
-		cfg.Log.Console.Level = "warn"
-		cfg.Log.Zap.Level = "warn"
 		cfg.Core.Mode = "prod"
 	}
 
@@ -92,7 +78,7 @@ func start(c *cli.Context) error {
 	})
 
 	if err := g.Wait(); err != nil {
-		log.Error("服务出错了：", err)
+		log.Errorf("接口服务停止了：%v", err)
 	}
 
 	return g.Wait()
@@ -102,7 +88,7 @@ func run() {
 	app := cli.NewApp()
 	app.Name = "webserver"
 	app.Version = version.Info.String() // version.Version.String()
-	app.Usage = "一个Golang接口服务器"
+	app.Usage = "Golang接口服务器"
 	app.UsageText = usageStr
 	app.Action = start
 	app.Flags = flags
